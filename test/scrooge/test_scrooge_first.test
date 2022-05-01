@@ -1,0 +1,13 @@
+statement ok
+LOAD 'build/debug/scrooge.duckdb_extension';
+
+statement ok
+create table test (a timestamptz, b BIGINT)
+
+statement ok
+insert into test  values ('2021-11-15 02:30:00'::timestamptz, 10),  ('2021-11-12 02:30:00'::timestamptz, 30),  ('2021-11-18 02:30:00'::timestamptz, 9)
+
+query I
+select first_s(b,a) from test;
+----
+30
