@@ -107,3 +107,5 @@ DUCKDB_EXTENSION_API const char *scrooge_version() {
   return duckdb::DuckDB::LibraryVersion();
 }
 }
+
+//ha
