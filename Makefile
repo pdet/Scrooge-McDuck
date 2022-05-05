@@ -43,7 +43,7 @@ test:
 
 
 format:
-	clang-format --sort-includes=0 -style=file -i src/scrooge.cpp src/aggregations/first.cpp src/include/aggregations/aggregate.hpp
+	clang-format --sort-includes=0 -style=file -i src/scrooge.cpp src/aggregations/first.cpp src/include/aggregations/aggregate.hpp src/aggregations/last.cpp
 	cmake-format -i CMakeLists.txt
 
 update:

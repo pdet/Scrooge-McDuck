@@ -17,4 +17,9 @@ struct FirstScrooge {
                                duckdb::Catalog &catalog);
 };
 
+struct LastScrooge {
+  static void RegisterFunction(duckdb::Connection &conn,
+                               duckdb::Catalog &catalog);
+};
+
 } // namespace scrooge

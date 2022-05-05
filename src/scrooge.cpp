@@ -22,6 +22,8 @@ void ScroogeExtension::Load(DuckDB &db) {
   con.BeginTransaction();
   auto &catalog = Catalog::GetCatalog(*con.context);
   scrooge::FirstScrooge::RegisterFunction(con, catalog);
+  scrooge::LastScrooge::RegisterFunction(con, catalog);
+
   con.Commit();
 }
 
