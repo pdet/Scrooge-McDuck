@@ -1,7 +1,7 @@
 //===----------------------------------------------------------------------===//
 //                         Scrooge
 //
-// aggregations/aggregate.hpp
+// functions/functions.hpp
 //
 //
 //===----------------------------------------------------------------------===//
@@ -18,6 +18,11 @@ struct FirstScrooge {
 };
 
 struct LastScrooge {
+  static void RegisterFunction(duckdb::Connection &conn,
+                               duckdb::Catalog &catalog);
+};
+
+struct TimeBucketScrooge {
   static void RegisterFunction(duckdb::Connection &conn,
                                duckdb::Catalog &catalog);
 };

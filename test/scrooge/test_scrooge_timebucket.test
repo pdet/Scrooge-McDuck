@@ -1,0 +1,67 @@
+statement ok
+LOAD 'build/debug/scrooge.duckdb_extension';
+
+#Corner cases
+statement error
+select timebucket()
+
+statement error
+select timebucket(NULL,NULL)
+----
+NULL
+
+statement error
+select timebucket('2021-11-15 02:30:00'::timestamptz,NULL)
+----
+NULL
+
+statement error
+select timebucket(NULL,'1M'::interval)
+----
+NULL
+
+#Empty Table
+query I
+select timebucket('2021-11-15 02:30:00'::timestamptz, '1M'::interval ) from range (5) where 1 == 0
+----
+
+statement ok
+create table test (a timestamptz)
+
+statement ok
+insert into test values
+    ('2021-11-14 02:30:00'::timestamptz),
+    ('2021-11-14 02:30:01'::timestamptz),
+    ('2021-11-14 02:30:02'::timestamptz),
+    ('2021-11-14 02:30:03'::timestamptz),
+    ('2021-11-14 02:30:04'::timestamptz),
+    ('2021-11-14 02:30:05'::timestamptz),
+    ('2021-11-14 02:30:09'::timestamptz),
+    ('2021-11-14 02:30:33'::timestamptz),
+    ('2021-11-14 02:30:34'::timestamptz),
+    ('2021-11-14 02:30:35'::timestamptz),
+    (NULL);
+
+query I
+select timebucket(a, '5S'::interval )  from test;
+----
+2021-11-14 02:30:00+00
+2021-11-14 02:30:00+00
+2021-11-14 02:30:00+00
+2021-11-14 02:30:00+00
+2021-11-14 02:30:00+00
+2021-11-14 02:30:05+00
+2021-11-14 02:30:05+00
+2021-11-14 02:30:30+00
+2021-11-14 02:30:30+00
+2021-11-14 02:30:35+00
+NULL
+
+query I
+select count from (select timebucket(a, '5S'::interval ) as buckets, count(*) as count from test group by buckets);
+----
+5
+2
+2
+1
+1

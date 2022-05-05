@@ -54,8 +54,9 @@ endif()
 link_directories(${DUCKDB_LIBRARY_FOLDER})
 include_directories(src/include)
 
-add_library(${TARGET_NAME} SHARED src/scrooge.cpp src/aggregations/first.cpp
-                                  src/aggregations/last.cpp)
+add_library(
+  ${TARGET_NAME} SHARED src/scrooge.cpp src/functions/first.cpp
+                        src/functions/last.cpp src/functions/timebucket.cpp)
 set_target_properties(${TARGET_NAME} PROPERTIES PREFIX "")
 
 if("${CMAKE_BUILD_TYPE}" STREQUAL "Debug")

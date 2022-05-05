@@ -1,6 +1,6 @@
 #define DUCKDB_BUILD_LOADABLE_EXTENSION
 
-#include "aggregations/aggregate.hpp"
+#include "functions/functions.hpp"
 #include "duckdb.hpp"
 #include "duckdb/function/table_function.hpp"
 #include "duckdb/main/client_context.hpp"
@@ -23,6 +23,7 @@ void ScroogeExtension::Load(DuckDB &db) {
   auto &catalog = Catalog::GetCatalog(*con.context);
   scrooge::FirstScrooge::RegisterFunction(con, catalog);
   scrooge::LastScrooge::RegisterFunction(con, catalog);
+  scrooge::TimeBucketScrooge::RegisterFunction(con, catalog);
 
   con.Commit();
 }
