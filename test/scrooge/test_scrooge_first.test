@@ -1,13 +1,81 @@
 statement ok
 LOAD 'build/debug/scrooge.duckdb_extension';
 
-statement ok
-create table test (a timestamptz, b BIGINT)
-
-statement ok
-insert into test  values ('2021-11-15 02:30:00'::timestamptz, 10),  ('2021-11-12 02:30:00'::timestamptz, 30),  ('2021-11-18 02:30:00'::timestamptz, 9)
+#Corner cases
+statement error
+select first_s()
 
 query I
-select first_s(b,a) from test;
+select first_s(NULL,NULL)
 ----
-30
+NULL
+
+query I
+select first_s(NULL,'2021-11-15 02:30:00'::timestamptz)
+----
+NULL
+
+
+#Empty Table
+query I
+select first_s(0 ,'2021-11-15 02:30:00'::timestamptz ) from range (5) where 1 == 0
+----
+NULL
+
+
+foreach type <numeric> decimal(4,0) decimal(8,0) decimal(12,0) decimal(18,0)
+
+#foreach type <numeric>
+
+statement ok
+create table test (a integer, b ${type}, c timestamptz)
+
+statement ok
+insert into test values
+    (1, 8::${type}, '2021-11-14 02:30:00'::timestamptz),
+    (1, null, '2021-11-15 02:30:00'::timestamptz),
+    (null, 10::${type}, '2021-11-13 02:30:00'::timestamptz),
+    (1, 7::${type}, '2021-11-12 02:30:00'::timestamptz),
+    (2, 4::${type}, '2021-11-18 02:30:00'::timestamptz),
+    (2, 20::${type}, '2021-11-20 02:30:00'::timestamptz),
+    (2, 25::${type}, null),
+    (2, 30::${type}, '2021-11-17 02:30:00'::timestamptz),
+    (2, 90::${type}, '2021-12-15 02:30:00'::timestamptz),
+    (2, 88::${type}, '2020-11-15 02:30:00'::timestamptz),
+    (2, 72::${type}, '2021-11-15 02:30:31'::timestamptz);
+
+query I
+select first_s(b,c) from test;
+----
+88
+
+query I
+select  first_s(b,c) from test group by a;
+----
+10
+7
+88
+
+# Window Function
+require vector_size 512
+
+query I rowsort
+select first_s(b,c) over (partition by a)
+    from test;
+----
+10
+7
+7
+7
+88
+88
+88
+88
+88
+88
+88
+
+statement ok
+DROP TABLE test
+
+endloop

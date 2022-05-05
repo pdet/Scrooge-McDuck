@@ -35,11 +35,15 @@ release: pull
 	cmake  -DCMAKE_BUILD_TYPE=RelWithDebInfo -DDUCKDB_INCLUDE_FOLDER=duckdb/src/include -DDUCKDB_LIBRARY_FOLDER=duckdb/build/release/src ${OSX_BUILD_UNIVERSAL_FLAG} ../.. && \
 	cmake --build .
 
-test: release duckdb_release
+test_release: release duckdb_release
 	../duckdb/build/release/test/unittest --test-dir . "[scrooge]"
 
+test:
+	../duckdb/build/debug/test/unittest --test-dir . "[scrooge]"
+
+
 format:
-	clang-format --sort-includes=0 -style=file -i src/scrooge.cpp
+	clang-format --sort-includes=0 -style=file -i src/scrooge.cpp src/aggregations/first.cpp src/include/aggregations/aggregate.hpp
 	cmake-format -i CMakeLists.txt
 
 update:
