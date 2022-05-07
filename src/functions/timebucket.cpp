@@ -85,7 +85,9 @@ void TimeBucketScrooge::RegisterFunction(duckdb::Connection &conn,
   timebucket.AddFunction(duckdb::ScalarFunction(
       {duckdb::LogicalType::TIMESTAMP_TZ, duckdb::LogicalType::INTERVAL},
       duckdb::LogicalType::TIMESTAMP_TZ, TimeBucketFunction));
-
+  timebucket.AddFunction(duckdb::ScalarFunction(
+      {duckdb::LogicalType::TIMESTAMP, duckdb::LogicalType::INTERVAL},
+      duckdb::LogicalType::TIMESTAMP, TimeBucketFunction));
   duckdb::CreateScalarFunctionInfo timebucket_info(timebucket);
   catalog.CreateFunction(*conn.context, &timebucket_info);
 }

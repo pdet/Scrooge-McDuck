@@ -22,25 +22,26 @@ select first_s(0 ,'2021-11-15 02:30:00'::timestamptz ) from range (5) where 1 ==
 ----
 NULL
 
+foreach timestamp_type timestamp timestamptz
 
 foreach type <numeric> decimal(4,0) decimal(8,0) decimal(12,0) decimal(18,0)
 
 statement ok
-create table test (a integer, b ${type}, c timestamptz)
+create table test (a integer, b ${type}, c ${timestamp_type})
 
 statement ok
 insert into test values
-    (1, 8::${type}, '2021-11-14 02:30:00'::timestamptz),
-    (1, null, '2021-11-15 02:30:00'::timestamptz),
-    (null, 10::${type}, '2021-11-13 02:30:00'::timestamptz),
-    (1, 7::${type}, '2021-11-12 02:30:00'::timestamptz),
-    (2, 4::${type}, '2021-11-18 02:30:00'::timestamptz),
-    (2, 20::${type}, '2021-11-20 02:30:00'::timestamptz),
+    (1, 8::${type}, '2021-11-14 02:30:00'::${timestamp_type}),
+    (1, null, '2021-11-15 02:30:00'::${timestamp_type}),
+    (null, 10::${type}, '2021-11-13 02:30:00'::${timestamp_type}),
+    (1, 7::${type}, '2021-11-12 02:30:00'::${timestamp_type}),
+    (2, 4::${type}, '2021-11-18 02:30:00'::${timestamp_type}),
+    (2, 20::${type}, '2021-11-20 02:30:00'::${timestamp_type}),
     (2, 25::${type}, null),
-    (2, 30::${type}, '2021-11-17 02:30:00'::timestamptz),
-    (2, 90::${type}, '2021-12-15 02:30:00'::timestamptz),
-    (2, 88::${type}, '2020-11-15 02:30:00'::timestamptz),
-    (2, 72::${type}, '2021-11-15 02:30:31'::timestamptz);
+    (2, 30::${type}, '2021-11-17 02:30:00'::${timestamp_type}),
+    (2, 90::${type}, '2021-12-15 02:30:00'::${timestamp_type}),
+    (2, 88::${type}, '2020-11-15 02:30:00'::${timestamp_type}),
+    (2, 72::${type}, '2021-11-15 02:30:31'::${timestamp_type});
 
 query I
 select first_s(b,c) from test;
@@ -75,5 +76,7 @@ select first_s(b,c) over (partition by a)
 
 statement ok
 DROP TABLE test
+
+endloop
 
 endloop

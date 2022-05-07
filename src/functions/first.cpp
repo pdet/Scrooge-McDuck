@@ -97,63 +97,63 @@ std::unique_ptr<duckdb::FunctionData> BindDoubleFirst(
 }
 
 duckdb::AggregateFunction
-GetFirstScroogeFunction(const duckdb::LogicalType &type) {
+GetFirstScroogeFunction(const duckdb::LogicalType &timestamp_type, const duckdb::LogicalType &type) {
   switch (type.id()) {
   case duckdb::LogicalTypeId::SMALLINT:
     return duckdb::AggregateFunction::BinaryAggregate<
         FirstScroogeState<int16_t>, int16_t, int64_t, int16_t,
-        FirstScroogeOperation>(type, duckdb::LogicalType::TIMESTAMP_TZ, type);
+        FirstScroogeOperation>(type, timestamp_type, type);
   case duckdb::LogicalTypeId::TINYINT:
     return duckdb::AggregateFunction::BinaryAggregate<FirstScroogeState<int8_t>,
                                                       int8_t, int64_t, int8_t,
                                                       FirstScroogeOperation>(
-        type, duckdb::LogicalType::TIMESTAMP_TZ, type);
+        type, timestamp_type, type);
   case duckdb::LogicalTypeId::INTEGER:
     return duckdb::AggregateFunction::BinaryAggregate<
         FirstScroogeState<int32_t>, int32_t, int64_t, int32_t,
-        FirstScroogeOperation>(type, duckdb::LogicalType::TIMESTAMP_TZ, type);
+        FirstScroogeOperation>(type, timestamp_type, type);
   case duckdb::LogicalTypeId::BIGINT:
     return duckdb::AggregateFunction::BinaryAggregate<
         FirstScroogeState<int64_t>, int64_t, int64_t, int64_t,
-        FirstScroogeOperation>(type, duckdb::LogicalType::TIMESTAMP_TZ, type);
+        FirstScroogeOperation>(type, timestamp_type, type);
   case duckdb::LogicalTypeId::DECIMAL: {
     auto decimal_aggregate = duckdb::AggregateFunction::BinaryAggregate<
         FirstScroogeState<duckdb::hugeint_t>, duckdb::hugeint_t, int64_t,
         duckdb::hugeint_t, FirstScroogeOperation>(
-        type, duckdb::LogicalType::TIMESTAMP_TZ, type);
+        type, timestamp_type, type);
     decimal_aggregate.bind = BindDoubleFirst;
     return decimal_aggregate;
   }
   case duckdb::LogicalTypeId::FLOAT:
     return duckdb::AggregateFunction::BinaryAggregate<
         FirstScroogeState<float>, float, int64_t, float, FirstScroogeOperation>(
-        type, duckdb::LogicalType::TIMESTAMP_TZ, type);
+        type, timestamp_type, type);
   case duckdb::LogicalTypeId::DOUBLE:
     return duckdb::AggregateFunction::BinaryAggregate<FirstScroogeState<double>,
                                                       double, int64_t, double,
                                                       FirstScroogeOperation>(
-        type, duckdb::LogicalType::TIMESTAMP_TZ, type);
+        type, timestamp_type, type);
   case duckdb::LogicalTypeId::UTINYINT:
     return duckdb::AggregateFunction::BinaryAggregate<
         FirstScroogeState<uint8_t>, uint8_t, int64_t, uint8_t,
-        FirstScroogeOperation>(type, duckdb::LogicalType::TIMESTAMP_TZ, type);
+        FirstScroogeOperation>(type, timestamp_type, type);
   case duckdb::LogicalTypeId::USMALLINT:
     return duckdb::AggregateFunction::BinaryAggregate<
         FirstScroogeState<uint16_t>, uint16_t, int64_t, uint16_t,
-        FirstScroogeOperation>(type, duckdb::LogicalType::TIMESTAMP_TZ, type);
+        FirstScroogeOperation>(type, timestamp_type, type);
   case duckdb::LogicalTypeId::UINTEGER:
     return duckdb::AggregateFunction::BinaryAggregate<
         FirstScroogeState<uint32_t>, uint32_t, int64_t, uint32_t,
-        FirstScroogeOperation>(type, duckdb::LogicalType::TIMESTAMP_TZ, type);
+        FirstScroogeOperation>(type, timestamp_type, type);
   case duckdb::LogicalTypeId::UBIGINT:
     return duckdb::AggregateFunction::BinaryAggregate<
         FirstScroogeState<uint64_t>, uint64_t, int64_t, uint64_t,
-        FirstScroogeOperation>(type, duckdb::LogicalType::TIMESTAMP_TZ, type);
+        FirstScroogeOperation>(type, timestamp_type, type);
   case duckdb::LogicalTypeId::HUGEINT:
     return duckdb::AggregateFunction::BinaryAggregate<
         FirstScroogeState<duckdb::hugeint_t>, duckdb::hugeint_t, int64_t,
         duckdb::hugeint_t, FirstScroogeOperation>(
-        type, duckdb::LogicalType::TIMESTAMP_TZ, type);
+        type, timestamp_type, type);
   default:
     throw duckdb::InternalException(
         "Scrooge First Function only accept Numeric Inputs");
@@ -167,7 +167,8 @@ void FirstScrooge::RegisterFunction(duckdb::Connection &conn,
   // temperature value based on time within an aggregate group.
   duckdb::AggregateFunctionSet first("first_s");
   for (auto &type : duckdb::LogicalType::Numeric()) {
-    first.AddFunction(GetFirstScroogeFunction(type));
+    first.AddFunction(GetFirstScroogeFunction(duckdb::LogicalType::TIMESTAMP_TZ, type));
+    first.AddFunction(GetFirstScroogeFunction(duckdb::LogicalType::TIMESTAMP, type));
   }
   duckdb::CreateAggregateFunctionInfo first_info(first);
   catalog.CreateFunction(*conn.context, &first_info);

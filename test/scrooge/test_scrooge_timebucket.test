@@ -65,3 +65,47 @@ select count from (select timebucket(a, '5S'::interval ) as buckets, count(*) as
 2
 1
 1
+
+statement ok
+drop table test
+
+statement ok
+create table test (a timestamp)
+
+statement ok
+insert into test values
+    ('2021-11-14 02:30:00'::timestamp),
+    ('2021-11-14 02:30:01'::timestamp),
+    ('2021-11-14 02:30:02'::timestamp),
+    ('2021-11-14 02:30:03'::timestamp),
+    ('2021-11-14 02:30:04'::timestamp),
+    ('2021-11-14 02:30:05'::timestamp),
+    ('2021-11-14 02:30:09'::timestamp),
+    ('2021-11-14 02:30:33'::timestamp),
+    ('2021-11-14 02:30:34'::timestamp),
+    ('2021-11-14 02:30:35'::timestamp),
+    (NULL);
+
+query I
+select timebucket(a, '5S'::interval )  from test;
+----
+2021-11-14 02:30:00
+2021-11-14 02:30:00
+2021-11-14 02:30:00
+2021-11-14 02:30:00
+2021-11-14 02:30:00
+2021-11-14 02:30:05
+2021-11-14 02:30:05
+2021-11-14 02:30:30
+2021-11-14 02:30:30
+2021-11-14 02:30:35
+NULL
+
+query I
+select count from (select timebucket(a, '5S'::interval ) as buckets, count(*) as count from test group by buckets);
+----
+5
+2
+2
+1
+1
