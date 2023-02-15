@@ -84,5 +84,5 @@ fig.show()
 The result of our Candle-Stick aggregation can be seen below:
 <img src="images/scrooge-plot.png"
      alt="Scrooge-Candle-Stick"
-     width=100
+     width=1000
      />
