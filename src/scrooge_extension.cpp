@@ -1,5 +1,6 @@
-#define DUCKDB_BUILD_LOADABLE_EXTENSION
+#define DUCKDB_EXTENSION_MAIN
 
+#include "scrooge_extension.hpp"
 #include "functions/functions.hpp"
 #include "duckdb.hpp"
 #include "duckdb/function/table_function.hpp"
@@ -11,16 +12,11 @@
 #include <iostream>
 
 namespace duckdb {
-class ScroogeExtension : public Extension {
-public:
-  void Load(DuckDB &db) override;
-  std::string Name() override;
-};
 
 void ScroogeExtension::Load(DuckDB &db) {
   Connection con(db);
   con.BeginTransaction();
-  auto &catalog = Catalog::GetCatalog(*con.context);
+  auto &catalog = Catalog::GetSystemCatalog(*con.context);
   scrooge::FirstScrooge::RegisterFunction(con, catalog);
   scrooge::LastScrooge::RegisterFunction(con, catalog);
   scrooge::TimeBucketScrooge::RegisterFunction(con, catalog);

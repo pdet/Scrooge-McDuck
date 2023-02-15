@@ -48,8 +48,8 @@ void TimeBucketFunction(duckdb::DataChunk &args, duckdb::ExpressionState &state,
       }
     }
   } else {
-    duckdb::VectorData timestamp_data;
-    timestamp_vector.Orrify(args.size(), timestamp_data);
+    duckdb::UnifiedVectorFormat timestamp_data;
+    timestamp_vector.ToUnifiedFormat(args.size(), timestamp_data);
     auto timestamp_ptr = (const duckdb::timestamp_t *)timestamp_data.data;
 
     auto result_ptr = duckdb::FlatVector::GetData<duckdb::timestamp_t>(result);

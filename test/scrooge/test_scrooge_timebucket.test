@@ -1,21 +1,20 @@
-statement ok
-LOAD 'build/debug/scrooge.duckdb_extension';
+require scrooge
 
 #Corner cases
 statement error
 select timebucket()
 
-statement error
+query I
 select timebucket(NULL,NULL)
 ----
 NULL
 
-statement error
+query I
 select timebucket('2021-11-15 02:30:00'::timestamptz,NULL)
 ----
 NULL
 
-statement error
+query I
 select timebucket(NULL,'1M'::interval)
 ----
 NULL

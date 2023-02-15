@@ -1,5 +1,4 @@
-statement ok
-LOAD 'build/debug/scrooge.duckdb_extension';
+require scrooge
 
 #Corner cases
 statement error
