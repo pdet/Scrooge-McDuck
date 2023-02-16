@@ -1,0 +1,36 @@
+# name: test/scrooge/test_yahoo.test
+# description: Test Yahoo Finance Scanner
+# group: [scrooge]
+
+require scrooge
+
+require httpfs
+
+statement error
+select * FROM yahoo_finance()
+
+statement error
+select * FROM yahoo_finance("^aeouhae", "2017-12-01"::DATE, "2017-12-10"::DATE, "1d"::INTERVAL)
+
+statement error
+select * FROM yahoo_finance("^GSPC", "2017-12-11"::DATE, "2017-12-10"::DATE, "1d"::INTERVAL)
+
+query IIIIIII
+select * FROM yahoo_finance("^GSPC", "2017-12-01"::DATE, "2017-12-10"::DATE, "1d"::INTERVAL)
+----
+2017-12-01	2645.100098	2650.620117	2605.52002	2642.219971	2642.219971	3950930000
+2017-12-04	2657.189941	2665.189941	2639.030029	2639.439941	2639.439941	4025840000
+2017-12-05	2639.780029	2648.719971	2627.72998	2629.570068	2629.570068	3547570000
+2017-12-06	2626.23999	2634.409912	2624.75	2629.27002	2629.27002	3253080000
+2017-12-07	2628.379883	2640.98999	2626.530029	2636.97998	2636.97998	3297060000
+2017-12-08	2646.209961	2651.649902	2644.100098	2651.5	2651.5	3126750000
+
+query I
+select volatility(close) FROM yahoo_finance("^GSPC", "2017-12-01"::DATE, "2017-12-10"::DATE, "1d"::INTERVAL)
+----
+7.640770797901039
+
+query I
+select sma(close) FROM yahoo_finance("^GSPC", "2017-12-01"::DATE, "2017-12-10"::DATE, "1d"::INTERVAL)
+----
+2638.16333
