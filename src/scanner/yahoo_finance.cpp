@@ -1,4 +1,6 @@
 #include "functions/scanner.hpp"
+#include "duckdb/execution/operator/persistent/csv_reader_options.hpp"
+#include "duckdb/main/relation/read_csv_relation.hpp"
 
 namespace scrooge {
 
@@ -26,7 +28,20 @@ YahooScanner::Bind(duckdb::ClientContext &context,
   std::string url = "https://query1.finance.yahoo.com/v7/finance/download/" +
                     symbol + "?period1=" + from + "&period2=" + to +
                     "&interval=" + interval + "&events=history";
-  result->plan = result->conn->ReadCSV(url);
+  std::vector<duckdb::ColumnDefinition> column_def;
+  column_def.emplace_back("Date", duckdb::LogicalType::DATE);
+  column_def.emplace_back("Open", duckdb::LogicalType::DOUBLE);
+  column_def.emplace_back("High", duckdb::LogicalType::DOUBLE);
+  column_def.emplace_back("Low", duckdb::LogicalType::DOUBLE);
+  column_def.emplace_back("Close", duckdb::LogicalType::DOUBLE);
+  column_def.emplace_back("Adj Close", duckdb::LogicalType::DOUBLE);
+  column_def.emplace_back("Volume", duckdb::LogicalType::HUGEINT);
+  auto csv_rel = duckdb::make_shared<duckdb::ReadCSVRelation>(
+      result->conn->context, url, std::move(column_def));
+  csv_rel->AddNamedParameter("HEADER", true);
+  csv_rel->AddNamedParameter("NULLSTR", "null");
+  result->plan = csv_rel;
+
   for (auto &column : result->plan->Columns()) {
     return_types.emplace_back(column.Type());
     names.emplace_back(column.Name());
