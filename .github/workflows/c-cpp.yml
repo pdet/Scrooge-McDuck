@@ -13,12 +13,10 @@ jobs:
       matrix:
         # empty string builds current submodule version, add commits/tags to build against other DuckDB versions
         duckdb_version: [ '' ]
-        arch: ['linux_amd64', 'linux_arm64', 'linux_amd64_gcc4']
+        arch: ['linux_amd64', 'linux_amd64_gcc4']
         include:
           - arch: 'linux_amd64'
             container: 'ubuntu:16.04'
-          - arch: 'linux_arm64'
-            container: 'ubuntu:18.04'
           - arch: 'linux_amd64_gcc4'
             container: 'quay.io/pypa/manylinux2014_x86_64'
     env:
@@ -55,12 +53,13 @@ jobs:
     - if: ${{ matrix.arch == 'linux_amd64_gcc4' }}
       uses: ./duckdb/.github/actions/centos_7_setup
       with:
-        openssl: 0
+        openssl: 1
 
-    - if: ${{ matrix.arch == 'linux_amd64' || matrix.arch == 'linux_arm64' }}
+    - if: ${{ matrix.arch == 'linux_amd64'  }}
       uses: ./duckdb/.github/actions/ubuntu_16_setup
       with:
-        aarch64_cross_compile: ${{ matrix.arch == 'linux_arm64' && 1 }}
+        aarch64_cross_compile: 0
+        openssl: 1
 
     - name: Checkout DuckDB to version
       if: ${{ matrix.duckdb_version != ''}}
@@ -80,7 +79,7 @@ jobs:
       run: |
         make release
 
-    - name: Build extension
+    - name: Run Tests
       if: ${{ matrix.arch != 'linux_arm64'}}
       shell: bash
       run: |
