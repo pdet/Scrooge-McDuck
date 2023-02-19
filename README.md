@@ -2,22 +2,57 @@
 Scrooge McDuck is a financial extension to [DuckDB](https://www.duckdb.org).
 The main goal of this extension is to support a set of aggregation functions and data scanners frequently used on financial data.
 
+**Disclaimer**: This extension is in no way affiliated with the [DuckDB Foundation](https://duckdb.org/foundation/) or [DuckDB Labs](https://duckdblabs.com/). Therefore, any binaries produced and distributed of this extension are unsigned.
 
 
 To build, type 
-```
+``` sh
 make
 ```
 
-To run, run the bundled `duckdb` shell:
-```
- ./duckdb/build/release/duckdb 
+To run, run the `duckdb` shell with the unsined flag:
+``` sh
+cd build/release/
+ ./duckdb -unsigned
 ```
 
 Then, load the Scrooge McDuck extension like so:
 ```SQL
-LOAD 'build/release/scrooge.duckdb_extension';
+LOAD 'extension/scrooge/scrooge.duckdb_extension';
 ```
+
+## Available Scanner
+
+### yahoo_finance(symbol,start_period,end_period,interval)
+Directly Scans financial data from Yahoo into a DuckDB Table.
+Usage:
+```sql
+select * FROM yahoo_finance("^GSPC", "2017-12-01"::DATE, "2017-12-10"::DATE, "1d")
+----
+2017-12-01	2645.100098	2650.620117	2605.52002	2642.219971	2642.219971	3950930000
+2017-12-04	2657.189941	2665.189941	2639.030029	2639.439941	2639.439941	4025840000
+2017-12-05	2639.780029	2648.719971	2627.72998	2629.570068	2629.570068	3547570000
+2017-12-06	2626.23999	2634.409912	2624.75	2629.27002	2629.27002	3253080000
+2017-12-07	2628.379883	2640.98999	2626.530029	2636.97998	2636.97998	3297060000
+2017-12-08	2646.209961	2651.649902	2644.100098	2651.5	2651.5	3126750000
+```
+
+## Available Functions
+
+### FIRST_S(A::{NUMERIC_VALUE}, B::{TIMESTAMPTZ})
+It returns the value of column A based omn the earliest timestamp value of column B.
+
+### LAST_S(A::{NUMERIC_VALUE}, B::{TIMESTAMPTZ})
+It returns the value of column A based on the latest timestamp value of column B
+
+### TIMEBUCKET(A::{TIMESTAMPTZ}, B::{INTERVAL})
+Creates timestamp buckets on column A, with ranges on the interval of value B.
+
+### VOLATILITY(A::{DOUBLE})
+Returns the volatility of that financial instrument during the given period of time.
+
+### SMA(A::{DOUBLE})
+Returns the average price, during a period of time, of a financial instrument
 
 ## Demo
 To reproduce this demo, you must have:
