@@ -27,4 +27,8 @@ struct TimeBucketScrooge {
                                duckdb::Catalog &catalog);
 };
 
+struct Aliases {
+  static void Register(duckdb::Connection &conn, duckdb::Catalog &catalog);
+};
+
 } // namespace scrooge

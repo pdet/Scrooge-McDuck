@@ -2,6 +2,7 @@
 
 #include "scrooge_extension.hpp"
 #include "functions/functions.hpp"
+#include "functions/scanner.hpp"
 #include "duckdb.hpp"
 #include "duckdb/function/table_function.hpp"
 #include "duckdb/main/client_context.hpp"
@@ -20,6 +21,16 @@ void ScroogeExtension::Load(DuckDB &db) {
   scrooge::FirstScrooge::RegisterFunction(con, catalog);
   scrooge::LastScrooge::RegisterFunction(con, catalog);
   scrooge::TimeBucketScrooge::RegisterFunction(con, catalog);
+  scrooge::Aliases::Register(con, catalog);
+
+  // Create Yahoo Scanner Function
+  TableFunction yahoo_scanner("yahoo_finance",
+                              {LogicalType::VARCHAR, LogicalType::ANY,
+                               LogicalType::ANY, LogicalType::VARCHAR},
+                              scrooge::YahooScanner::Scan,
+                              scrooge::YahooScanner::Bind);
+  CreateTableFunctionInfo yahoo_scanner_info(yahoo_scanner);
+  catalog.CreateTableFunction(*con.context, &yahoo_scanner_info);
 
   con.Commit();
 }
