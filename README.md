@@ -37,6 +37,22 @@ select * FROM yahoo_finance("^GSPC", "2017-12-01"::DATE, "2017-12-10"::DATE, "1d
 2017-12-08	2646.209961	2651.649902	2644.100098	2651.5	2651.5	3126750000
 ```
 
+## Available Functions
+
+### FIRST_S(A::{NUMERIC_VALUE}, B::{TIMESTAMPTZ})
+It returns the value of column A based omn the earliest timestamp value of column B.
+
+### LAST_S(A::{NUMERIC_VALUE}, B::{TIMESTAMPTZ})
+It returns the value of column A based on the latest timestamp value of column B
+
+### TIMEBUCKET(A::{TIMESTAMPTZ}, B::{INTERVAL})
+Creates timestamp buckets on column A, with ranges on the interval of value B.
+
+### VOLATILITY(A::{DOUBLE})
+Returns the volatility of that financial instrument during the given period of time.
+
+### SMA(A::{DOUBLE})
+Returns the average price, during a period of time, of a financial instrument
 
 ## Demo
 To reproduce this demo, you must have:
