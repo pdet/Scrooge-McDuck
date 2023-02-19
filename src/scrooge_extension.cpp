@@ -25,8 +25,8 @@ void ScroogeExtension::Load(DuckDB &db) {
 
   // Create Yahoo Scanner Function
   TableFunction yahoo_scanner("yahoo_finance",
-                              {LogicalType::VARCHAR, LogicalType::DATE,
-                               LogicalType::DATE, LogicalType::INTERVAL},
+                              {LogicalType::VARCHAR, LogicalType::ANY,
+                               LogicalType::ANY, LogicalType::VARCHAR},
                               scrooge::YahooScanner::Scan,
                               scrooge::YahooScanner::Bind);
   CreateTableFunctionInfo yahoo_scanner_info(yahoo_scanner);

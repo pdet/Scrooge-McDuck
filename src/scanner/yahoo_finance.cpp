@@ -11,20 +11,50 @@ struct YahooFunctionData : public duckdb::TableFunctionData {
   std::unique_ptr<duckdb::Connection> conn;
 };
 
+void ValidInterval(std::string &interval) {
+  std::unordered_set<std::string> valid_interval{"1d", "5d", "1wk", "1mo",
+                                                 "3mo"};
+  if (valid_interval.find(interval) == valid_interval.end()) {
+    std::string accepted_intervals =
+        "1d: 1 day interval\n5d: 5 day interval\n1wk: 1 week interval\n1mo: 1 "
+        "month interval\n3mo: 3 month interval\n";
+    throw duckdb::InvalidInputException(
+        "Interval is not valid, you should use one of the following valid "
+        "intervals: \n" +
+        accepted_intervals);
+  }
+}
+
 std::unique_ptr<duckdb::FunctionData>
 YahooScanner::Bind(duckdb::ClientContext &context,
                    duckdb::TableFunctionBindInput &input,
                    std::vector<duckdb::LogicalType> &return_types,
                    std::vector<std::string> &names) {
+  if (input.inputs[1].type() != duckdb::LogicalType::VARCHAR &&
+      input.inputs[1].type() != duckdb::LogicalType::DATE) {
+    throw duckdb::InvalidInputException(
+        "Start Period must be a Date or a Date-VARCHAR ");
+  }
+  if (input.inputs[2].type() != duckdb::LogicalType::VARCHAR &&
+      input.inputs[2].type() != duckdb::LogicalType::DATE) {
+    throw duckdb::InvalidInputException(
+        "Start Period must be a Date or a Date-VARCHAR ");
+  }
   auto result = duckdb::make_unique<YahooFunctionData>();
   result->conn = duckdb::make_unique<duckdb::Connection>(*context.db);
   auto symbol = input.inputs[0].GetValueUnsafe<std::string>();
+  auto from_date = input.inputs[1].GetValue<duckdb::date_t>();
+  auto to_date = input.inputs[2].GetValue<duckdb::date_t>();
   auto from = std::to_string(
       duckdb::Date::Epoch(input.inputs[1].GetValue<duckdb::date_t>()));
   auto to = std::to_string(
       duckdb::Date::Epoch(input.inputs[2].GetValue<duckdb::date_t>()));
-  auto interval =
-      std::to_string(input.inputs[3].GetValue<duckdb::interval_t>().days) + 'd';
+  auto interval = input.inputs[3].GetValue<std::string>();
+  ValidInterval(interval);
+  if (to_date <= from_date) {
+    throw duckdb::InvalidInputException(
+        "The End period must be higher than the start period");
+  }
   std::string url = "https://query1.finance.yahoo.com/v7/finance/download/" +
                     symbol + "?period1=" + from + "&period2=" + to +
                     "&interval=" + interval + "&events=history";
