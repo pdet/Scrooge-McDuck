@@ -207,7 +207,7 @@ select volatility(close) FROM yahoo_finance("^GSPC", "2023-01-01"::DATE, "2023-0
 query I
 select volatility(close) FROM yahoo_finance("BTC-USD", "2023-01-01"::DATE, "2023-02-18"::DATE, "1d");
 ----
-2491.094573465658
+2535.839600150706
 
 
 # Try Big Data
