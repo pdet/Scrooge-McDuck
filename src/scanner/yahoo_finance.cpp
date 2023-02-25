@@ -1,6 +1,9 @@
 #include "functions/scanner.hpp"
 #include "duckdb/execution/operator/persistent/csv_reader_options.hpp"
 #include "duckdb/main/relation/read_csv_relation.hpp"
+#include "duckdb/main/relation/projection_relation.hpp"
+#include "duckdb/parser/expression/star_expression.hpp"
+#include "duckdb/parser/expression/constant_expression.hpp"
 
 namespace scrooge {
 
@@ -22,9 +25,9 @@ int64_t IntervalInEpoch(std::string &interval) {
 
 struct YahooFunctionData : public duckdb::TableFunctionData {
   YahooFunctionData(std::unique_ptr<duckdb::Connection> conn_p,
-                    std::string &symbol_p, int64_t from_epoch_p,
+                    std::vector<std::string> &symbol_p, int64_t from_epoch_p,
                     int64_t to_epoch_p, std::string &interval_p)
-      : conn(std::move(conn_p)), symbol(symbol_p), from_epoch(from_epoch_p),
+      : conn(std::move(conn_p)), symbols(symbol_p), from_epoch(from_epoch_p),
         to_epoch(to_epoch_p), interval(interval_p) {
     auto interval_epoch = IntervalInEpoch(interval);
     // We have to do this hacky thing to keep yahoo finance requests happy
@@ -34,25 +37,39 @@ struct YahooFunctionData : public duckdb::TableFunctionData {
     } else {
       increment_epoch = (to_epoch - from_epoch);
     }
+    from_epoch_og = from_epoch;
     cur_to_epoch = from_epoch + increment_epoch < to_epoch
                        ? from_epoch + increment_epoch
                        : to_epoch;
+    symbol = symbols[0];
   }
   std::shared_ptr<duckdb::Relation> plan;
   std::unique_ptr<duckdb::Connection> conn;
+  std::vector<std::string> symbols;
   std::string symbol;
+  idx_t cur_symbol_idx = 0;
   int64_t from_epoch;
+  int64_t from_epoch_og;
   int64_t cur_to_epoch;
   int64_t to_epoch;
   std::string interval;
   int64_t increment_epoch;
 };
 
-duckdb::shared_ptr<duckdb::ReadCSVRelation>
+duckdb::shared_ptr<duckdb::ProjectionRelation>
 GeneratePlan(YahooFunctionData &bind_data) {
   if (bind_data.cur_to_epoch > bind_data.to_epoch) {
-    // we are done
-    return nullptr;
+    if (bind_data.cur_symbol_idx + 1 == bind_data.symbols.size()) {
+      // we are done
+      return nullptr;
+    }
+    bind_data.cur_symbol_idx++;
+    bind_data.symbol = bind_data.symbols[bind_data.cur_symbol_idx];
+    bind_data.from_epoch = bind_data.from_epoch_og;
+    bind_data.cur_to_epoch =
+        bind_data.from_epoch + bind_data.increment_epoch < bind_data.to_epoch
+            ? bind_data.from_epoch + bind_data.increment_epoch
+            : bind_data.to_epoch;
   }
   auto from = std::to_string(bind_data.from_epoch);
   auto to = std::to_string(bind_data.cur_to_epoch);
@@ -75,7 +92,21 @@ GeneratePlan(YahooFunctionData &bind_data) {
       bind_data.conn->context, url, std::move(column_def));
   csv_rel->AddNamedParameter("HEADER", true);
   csv_rel->AddNamedParameter("NULLSTR", "null");
-  return csv_rel;
+  std::vector<duckdb::unique_ptr<duckdb::ParsedExpression>> expressions;
+  auto star_exp = duckdb::make_unique<duckdb::StarExpression>(csv_rel->name);
+  std::vector<std::string> aliases;
+  if (bind_data.symbols.size() > 1) {
+    auto constant_expression =
+        duckdb::make_unique<duckdb::ConstantExpression>(bind_data.symbol);
+    expressions.emplace_back(std::move(constant_expression));
+    aliases.emplace_back("symbol");
+  }
+  expressions.emplace_back(std::move(star_exp));
+  aliases.emplace_back("star");
+
+  auto proj_rel = duckdb::make_shared<duckdb::ProjectionRelation>(
+      std::move(csv_rel), std::move(expressions), aliases);
+  return proj_rel;
 }
 
 void ValidInterval(std::string &interval) {
@@ -97,6 +128,12 @@ YahooScanner::Bind(duckdb::ClientContext &context,
                    duckdb::TableFunctionBindInput &input,
                    std::vector<duckdb::LogicalType> &return_types,
                    std::vector<std::string> &names) {
+  if (input.inputs[0].type() != duckdb::LogicalType::VARCHAR &&
+      input.inputs[0].type() !=
+          duckdb::LogicalType::LIST(duckdb::LogicalType::VARCHAR)) {
+    throw duckdb::InvalidInputException(
+        "Symbol must be either a String or a List of strings");
+  }
   if (input.inputs[1].type() != duckdb::LogicalType::VARCHAR &&
       input.inputs[1].type() != duckdb::LogicalType::DATE) {
     throw duckdb::InvalidInputException(
@@ -107,7 +144,15 @@ YahooScanner::Bind(duckdb::ClientContext &context,
     throw duckdb::InvalidInputException(
         "Start Period must be a Date or a Date-VARCHAR ");
   }
-  auto symbol = input.inputs[0].GetValueUnsafe<std::string>();
+  std::vector<std::string> symbols;
+  if (input.inputs[0].type() == duckdb::LogicalType::VARCHAR) {
+    symbols.emplace_back(input.inputs[0].GetValueUnsafe<std::string>());
+  } else {
+    auto values = duckdb::ListValue::GetChildren(input.inputs[0]);
+    for (auto &value : values) {
+      symbols.emplace_back(value.GetValueUnsafe<std::string>());
+    }
+  }
   auto from_date = input.inputs[1].GetValue<duckdb::date_t>();
   auto to_date = input.inputs[2].GetValue<duckdb::date_t>();
   auto from = duckdb::Date::Epoch(input.inputs[1].GetValue<duckdb::date_t>());
@@ -119,7 +164,7 @@ YahooScanner::Bind(duckdb::ClientContext &context,
         "The End period must be higher than the start period");
   }
   auto result = duckdb::make_unique<YahooFunctionData>(
-      duckdb::make_unique<duckdb::Connection>(*context.db), symbol, from, to,
+      duckdb::make_unique<duckdb::Connection>(*context.db), symbols, from, to,
       interval);
   result->plan = GeneratePlan(*result);
   for (auto &column : result->plan->Columns()) {
