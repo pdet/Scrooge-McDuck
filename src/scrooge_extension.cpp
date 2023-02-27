@@ -32,6 +32,15 @@ void ScroogeExtension::Load(DuckDB &db) {
   CreateTableFunctionInfo yahoo_scanner_info(yahoo_scanner);
   catalog.CreateTableFunction(*con.context, &yahoo_scanner_info);
 
+  // Create Yahoo Scanner Function
+  TableFunction portfolio_frontier(
+      "portfolio_frontier",
+      {duckdb::LogicalType::LIST(duckdb::LogicalType::VARCHAR),
+       LogicalType::ANY, LogicalType::ANY, LogicalType::INTEGER},
+      scrooge::PortfolioFrontier::Scan, scrooge::PortfolioFrontier::Bind);
+  CreateTableFunctionInfo portfolio_frontier_info(portfolio_frontier);
+  catalog.CreateTableFunction(*con.context, &portfolio_frontier_info);
+
   con.Commit();
 }
 
