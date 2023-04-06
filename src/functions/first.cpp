@@ -57,7 +57,7 @@ struct FirstScroogeOperation {
   static bool IgnoreNull() { return true; }
 };
 
-std::unique_ptr<duckdb::FunctionData> BindDoubleFirst(
+duckdb::unique_ptr<duckdb::FunctionData> BindDoubleFirst(
     duckdb::ClientContext &context, duckdb::AggregateFunction &bound_function,
     std::vector<duckdb::unique_ptr<duckdb::Expression>> &arguments) {
   auto &decimal_type = arguments[0]->return_type;
