@@ -57,7 +57,7 @@ struct LastScroogeOperation {
   static bool IgnoreNull() { return true; }
 };
 
-std::unique_ptr<duckdb::FunctionData> BindDoupleLastFunctionDecimal(
+duckdb::unique_ptr<duckdb::FunctionData> BindDoupleLastFunctionDecimal(
     duckdb::ClientContext &context, duckdb::AggregateFunction &bound_function,
     std::vector<duckdb::unique_ptr<duckdb::Expression>> &arguments) {
   auto &decimal_type = arguments[0]->return_type;

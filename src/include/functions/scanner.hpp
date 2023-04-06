@@ -12,7 +12,7 @@
 
 namespace scrooge {
 struct YahooScanner {
-  static std::unique_ptr<duckdb::FunctionData>
+  static duckdb::unique_ptr<duckdb::FunctionData>
   Bind(duckdb::ClientContext &context, duckdb::TableFunctionBindInput &input,
        std::vector<duckdb::LogicalType> &return_types,
        std::vector<std::string> &names);
@@ -22,7 +22,7 @@ struct YahooScanner {
 };
 
 struct PortfolioFrontier {
-  static std::unique_ptr<duckdb::FunctionData>
+  static duckdb::unique_ptr<duckdb::FunctionData>
   Bind(duckdb::ClientContext &context, duckdb::TableFunctionBindInput &input,
        std::vector<duckdb::LogicalType> &return_types,
        std::vector<std::string> &names);
