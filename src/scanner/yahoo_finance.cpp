@@ -1,11 +1,13 @@
 #include "functions/scanner.hpp"
-#include "duckdb/execution/operator/persistent/csv_reader_options.hpp"
+#include "duckdb/execution/operator/scan/csv/csv_reader_options.hpp"
 #include "duckdb/main/relation/read_csv_relation.hpp"
 #include "duckdb/main/relation/projection_relation.hpp"
 #include "duckdb/parser/expression/star_expression.hpp"
 #include "duckdb/parser/expression/constant_expression.hpp"
 
 namespace scrooge {
+
+using namespace duckdb;
 
 int64_t IntervalInEpoch(std::string &interval) {
   // ble string checkaroo
@@ -94,7 +96,7 @@ GeneratePlan(YahooFunctionData &bind_data) {
   csv_rel->AddNamedParameter("NULLSTR", "null");
   std::vector<duckdb::unique_ptr<duckdb::ParsedExpression>> expressions;
   auto star_exp = duckdb::make_uniq<duckdb::StarExpression>(csv_rel->name);
-  std::vector<std::string> aliases;
+  vector<std::string> aliases;
   if (bind_data.symbols.size() > 1) {
     auto constant_expression =
         duckdb::make_uniq<duckdb::ConstantExpression>(bind_data.symbol);
