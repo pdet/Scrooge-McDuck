@@ -79,6 +79,10 @@ GeneratePlan(YahooFunctionData &bind_data) {
   bind_data.from_epoch += bind_data.increment_epoch;
   bind_data.cur_to_epoch += bind_data.increment_epoch;
 
+  if (!Catalog::TryAutoLoad(*bind_data.conn->context, "httpfs")) {
+    throw MissingExtensionException("httpfs extension is required to fetch data from https://query1.finance.yahoo.com");
+  }
+
   std::string url = "https://query1.finance.yahoo.com/v7/finance/download/" +
                     bind_data.symbol + "?period1=" + from + "&period2=" + to +
                     "&interval=" + bind_data.interval + "&events=history";
