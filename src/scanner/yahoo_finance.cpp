@@ -1,11 +1,13 @@
 #include "functions/scanner.hpp"
-#include "duckdb/execution/operator/persistent/csv_reader_options.hpp"
+#include "duckdb/execution/operator/scan/csv/csv_reader_options.hpp"
 #include "duckdb/main/relation/read_csv_relation.hpp"
 #include "duckdb/main/relation/projection_relation.hpp"
 #include "duckdb/parser/expression/star_expression.hpp"
 #include "duckdb/parser/expression/constant_expression.hpp"
 
 namespace scrooge {
+
+using namespace duckdb;
 
 int64_t IntervalInEpoch(std::string &interval) {
   // ble string checkaroo
@@ -77,6 +79,10 @@ GeneratePlan(YahooFunctionData &bind_data) {
   bind_data.from_epoch += bind_data.increment_epoch;
   bind_data.cur_to_epoch += bind_data.increment_epoch;
 
+  if (!Catalog::TryAutoLoad(*bind_data.conn->context, "httpfs")) {
+    throw MissingExtensionException("httpfs extension is required to fetch data from https://query1.finance.yahoo.com");
+  }
+
   std::string url = "https://query1.finance.yahoo.com/v7/finance/download/" +
                     bind_data.symbol + "?period1=" + from + "&period2=" + to +
                     "&interval=" + bind_data.interval + "&events=history";
@@ -94,7 +100,7 @@ GeneratePlan(YahooFunctionData &bind_data) {
   csv_rel->AddNamedParameter("NULLSTR", "null");
   std::vector<duckdb::unique_ptr<duckdb::ParsedExpression>> expressions;
   auto star_exp = duckdb::make_uniq<duckdb::StarExpression>(csv_rel->name);
-  std::vector<std::string> aliases;
+  vector<std::string> aliases;
   if (bind_data.symbols.size() > 1) {
     auto constant_expression =
         duckdb::make_uniq<duckdb::ConstantExpression>(bind_data.symbol);

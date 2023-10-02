@@ -1,7 +1,7 @@
 #include <cmath>
 #include <vector>
 #include "functions/scanner.hpp"
-#include "duckdb/execution/operator/persistent/csv_reader_options.hpp"
+#include "duckdb/execution/operator/scan/csv/csv_reader_options.hpp"
 #include "duckdb/main/relation/read_csv_relation.hpp"
 #include "duckdb/main/relation/projection_relation.hpp"
 #include "duckdb/parser/expression/star_expression.hpp"
@@ -11,7 +11,6 @@
 
 namespace scrooge {
 
-using namespace std;
 using namespace duckdb;
 
 struct Asset {

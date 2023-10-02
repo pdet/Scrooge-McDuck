@@ -4,6 +4,8 @@
 
 namespace scrooge {
 
+using namespace duckdb;
+
 template <class T> struct LastScroogeState {
   T last;
   int64_t last_time;
@@ -11,46 +13,44 @@ template <class T> struct LastScroogeState {
 };
 
 struct LastScroogeOperation {
-  template <class STATE> static void Initialize(STATE *state) {
-    state->last_time = duckdb::NumericLimits<int64_t>::Minimum();
-    state->executed = false;
+  template <class STATE> static void Initialize(STATE &state) {
+    state.last_time = duckdb::NumericLimits<int64_t>::Minimum();
+    state.executed = false;
   }
 
   template <class A_TYPE, class B_TYPE, class STATE, class OP>
   static void
-  Operation(STATE *state, duckdb::AggregateInputData &aggr_input_data,
-            A_TYPE *x_data, B_TYPE *y_data, duckdb::ValidityMask &amask,
-            duckdb::ValidityMask &bmask, idx_t xidx, idx_t yidx) {
+  Operation(STATE &state,
+            const A_TYPE &x_data, const B_TYPE &y_data, duckdb::AggregateBinaryInput &aggr_input_data) {
 
-    const auto time = y_data[yidx];
-    if (!state->executed || time > state->last_time) {
-      state->last_time = time;
-      state->last = x_data[xidx];
-      state->executed = true;
+    /*const auto time = y_data[yidx];
+    if (!state.executed || time > state.last_time) {
+      state.last_time = time;
+      state.last = x_data[xidx];
+      state.executed = true;
     }
+*/
   }
 
   template <class STATE, class OP>
-  static void Combine(const STATE &source, STATE *target,
+  static void Combine(const STATE &source, STATE &target,
                       duckdb::AggregateInputData &aggr_input_data) {
-    if (!target->executed) {
-      *target = source;
+    if (!target.executed) {
+      target = source;
     } else if (source.executed) {
-      if (target->last_time > source.last_time) {
-        target->last_time = source.last_time;
-        target->last = source.last;
+      if (target.last_time > source.last_time) {
+        target.last_time = source.last_time;
+        target.last = source.last;
       }
     }
   }
 
   template <class T, class STATE>
-  static void Finalize(duckdb::Vector &result, duckdb::AggregateInputData &,
-                       STATE *state, T *target, duckdb::ValidityMask &mask,
-                       idx_t idx) {
-    if (!state->executed) {
-      mask.SetInvalid(idx);
+  static void Finalize(STATE &state, T &target, duckdb::AggregateFinalizeData &finalize_data) {
+    if (!state.executed) {
+     // mask.SetInvalid(idx);
     } else {
-      target[idx] = state->last;
+      //target[idx] = state.last;
     }
   }
 
@@ -59,7 +59,7 @@ struct LastScroogeOperation {
 
 duckdb::unique_ptr<duckdb::FunctionData> BindDoupleLastFunctionDecimal(
     duckdb::ClientContext &context, duckdb::AggregateFunction &bound_function,
-    std::vector<duckdb::unique_ptr<duckdb::Expression>> &arguments) {
+    duckdb::vector<duckdb::unique_ptr<duckdb::Expression>> &arguments) {
   auto &decimal_type = arguments[0]->return_type;
   switch (decimal_type.InternalType()) {
   case duckdb::PhysicalType::INT16: {
@@ -180,7 +180,7 @@ void LastScrooge::RegisterFunction(duckdb::Connection &conn,
         GetLastScroogeFunction(duckdb::LogicalType::TIMESTAMP, type));
   }
   duckdb::CreateAggregateFunctionInfo last_info(last);
-  catalog.CreateFunction(*conn.context, &last_info);
+  catalog.CreateFunction(*conn.context, last_info);
 }
 
 } // namespace scrooge
