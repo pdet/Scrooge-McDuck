@@ -11,59 +11,53 @@ template <class T> struct FirstScroogeState {
 };
 
 struct FirstScroogeOperation {
-  template <class STATE> static void Initialize(STATE *state) {
-    state->earliest_time = duckdb::NumericLimits<int64_t>::Maximum();
-    state->executed = false;
+  template <class STATE> static void Initialize(STATE &state) {
+    state.earliest_time = duckdb::NumericLimits<int64_t>::Maximum();
+    state.executed = false;
   }
 
   template <class A_TYPE, class B_TYPE, class STATE, class OP>
   static void
-  Operation(STATE *state, duckdb::AggregateInputData &aggr_input_data,
-            A_TYPE *x_data, B_TYPE *y_data, duckdb::ValidityMask &amask,
-            duckdb::ValidityMask &bmask, idx_t xidx, idx_t yidx) {
-
-    const auto time = y_data[yidx];
-    if (!state->executed || time < state->earliest_time) {
-      state->earliest_time = time;
-      state->first = x_data[xidx];
-      state->executed = true;
+  Operation(STATE &state,
+            const A_TYPE &x_data, const B_TYPE &y_data, duckdb::AggregateBinaryInput &idata) {
+    if (!state.executed || y_data < state.earliest_time) {
+      state.earliest_time = y_data;
+      state.first = x_data;
+      state.executed = true;
     }
   }
 
   template <class STATE, class OP>
-  static void Combine(const STATE &source, STATE *target,
+  static void Combine(const STATE &source, STATE &target,
                       duckdb::AggregateInputData &aggr_input_data) {
-    if (!target->executed) {
-      *target = source;
+    if (!target.executed) {
+      target = source;
     } else if (source.executed) {
-      if (target->earliest_time > source.earliest_time) {
-        target->earliest_time = source.earliest_time;
-        target->first = source.first;
+      if (target.earliest_time > source.earliest_time) {
+        target.earliest_time = source.earliest_time;
+        target.first = source.first;
       }
     }
   }
 
   template <class T, class STATE>
-  static void Finalize(duckdb::Vector &result, duckdb::AggregateInputData &,
-                       STATE *state, T *target, duckdb::ValidityMask &mask,
-                       idx_t idx) {
-    if (!state->executed) {
-      mask.SetInvalid(idx);
+  static void Finalize(STATE &state, T &target, duckdb::AggregateFinalizeData &finalize_data) {
+    if (!state.executed) {
+      finalize_data.ReturnNull();
     } else {
-      target[idx] = state->first;
+      target = state.first;
     }
   }
 
   static bool IgnoreNull() { return true; }
 };
 
-duckdb::unique_ptr<duckdb::FunctionData> BindDoubleFirst(
-    duckdb::ClientContext &context, duckdb::AggregateFunction &bound_function,
-    std::vector<duckdb::unique_ptr<duckdb::Expression>> &arguments) {
+duckdb::unique_ptr<duckdb::FunctionData> BindDoubleFirst(duckdb::ClientContext &context, duckdb::AggregateFunction &function,
+                                                              duckdb::vector<duckdb::unique_ptr<duckdb::Expression>> &arguments) {
   auto &decimal_type = arguments[0]->return_type;
   switch (decimal_type.InternalType()) {
   case duckdb::PhysicalType::INT16: {
-    bound_function =
+    function =
         duckdb::AggregateFunction::BinaryAggregate<FirstScroogeState<int16_t>,
                                                    int16_t, int64_t, int16_t,
                                                    FirstScroogeOperation>(
@@ -71,7 +65,7 @@ duckdb::unique_ptr<duckdb::FunctionData> BindDoubleFirst(
     break;
   }
   case duckdb::PhysicalType::INT32: {
-    bound_function =
+    function =
         duckdb::AggregateFunction::BinaryAggregate<FirstScroogeState<int32_t>,
                                                    int32_t, int64_t, int32_t,
                                                    FirstScroogeOperation>(
@@ -79,7 +73,7 @@ duckdb::unique_ptr<duckdb::FunctionData> BindDoubleFirst(
     break;
   }
   case duckdb::PhysicalType::INT64: {
-    bound_function =
+    function =
         duckdb::AggregateFunction::BinaryAggregate<FirstScroogeState<int64_t>,
                                                    int64_t, int64_t, int64_t,
                                                    FirstScroogeOperation>(
@@ -87,12 +81,12 @@ duckdb::unique_ptr<duckdb::FunctionData> BindDoubleFirst(
     break;
   }
   default:
-    bound_function = duckdb::AggregateFunction::BinaryAggregate<
+    function = duckdb::AggregateFunction::BinaryAggregate<
         FirstScroogeState<duckdb::Hugeint>, duckdb::Hugeint, int64_t,
         duckdb::Hugeint, FirstScroogeOperation>(
         decimal_type, duckdb::LogicalType::TIMESTAMP_TZ, decimal_type);
   }
-  bound_function.name = "first_s";
+  function.name = "first_s";
   return nullptr;
 }
 
@@ -153,6 +147,10 @@ GetFirstScroogeFunction(const duckdb::LogicalType &timestamp_type,
     return duckdb::AggregateFunction::BinaryAggregate<
         FirstScroogeState<duckdb::hugeint_t>, duckdb::hugeint_t, int64_t,
         duckdb::hugeint_t, FirstScroogeOperation>(type, timestamp_type, type);
+  case duckdb::LogicalTypeId::UHUGEINT:
+    return duckdb::AggregateFunction::BinaryAggregate<
+        FirstScroogeState<duckdb::uhugeint_t>, duckdb::uhugeint_t, int64_t,
+        duckdb::uhugeint_t, FirstScroogeOperation>(type, timestamp_type, type);
   default:
     throw duckdb::InternalException(
         "Scrooge First Function only accept Numeric Inputs");
@@ -172,7 +170,7 @@ void FirstScrooge::RegisterFunction(duckdb::Connection &conn,
         GetFirstScroogeFunction(duckdb::LogicalType::TIMESTAMP, type));
   }
   duckdb::CreateAggregateFunctionInfo first_info(first);
-  catalog.CreateFunction(*conn.context, &first_info);
+  catalog.CreateFunction(*conn.context, first_info);
 }
 
 } // namespace scrooge
