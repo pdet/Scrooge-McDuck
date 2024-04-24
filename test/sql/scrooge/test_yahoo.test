@@ -1,4 +1,4 @@
-# name: test/scrooge/test_yahoo.test
+# name: test/sql/scrooge/test_yahoo.test
 # description: Test Yahoo Finance Scanner
 # group: [scrooge]
 
