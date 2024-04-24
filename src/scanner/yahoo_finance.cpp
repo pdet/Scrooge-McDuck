@@ -5,6 +5,7 @@
 #include "duckdb/parser/expression/constant_expression.hpp"
 #include "duckdb/parser/expression/star_expression.hpp"
 #include "functions/scanner.hpp"
+#include "duckdb/common/helper.hpp"
 
 namespace scrooge {
 

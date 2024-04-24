@@ -8,6 +8,7 @@
 #include "duckdb/parser/expression/constant_expression.hpp"
 #include "duckdb/main/relation/aggregate_relation.hpp"
 #include "duckdb/parser/expression/function_expression.hpp"
+#include "duckdb/common/helper.hpp"
 
 namespace scrooge {
 
@@ -56,8 +57,8 @@ duckdb::vector<double> generate_random_weights(int n) {
   return weights;
 }
 
-duckdb::vector<pair<double, double>> calculate_efficient_frontier(Portfolio &portfolio,
-                                                          int n) {
+duckdb::vector<pair<double, double>>
+calculate_efficient_frontier(Portfolio &portfolio, int n) {
   duckdb::vector<pair<double, double>> efficient_frontier(n);
   for (int i = 0; i < n; i++) {
     portfolio.weights.emplace_back(
@@ -95,8 +96,8 @@ PortfolioFrontier::Bind(duckdb::ClientContext &context,
         "Start Period must be a Date or a Date-VARCHAR ");
   }
   result->n = input.inputs[3].GetValue<int>();
-  duckdb::vector<Value> parameters{input.inputs[0], input.inputs[1], input.inputs[2],
-                           "1d"};
+  duckdb::vector<Value> parameters{input.inputs[0], input.inputs[1],
+                                   input.inputs[2], "1d"};
 
   auto tbl_rel = duckdb::make_shared_ptr<duckdb::TableFunctionRelation>(
       conn->context, "yahoo_finance", std::move(parameters));
@@ -128,7 +129,7 @@ PortfolioFrontier::Bind(duckdb::ClientContext &context,
 
   date_column = duckdb::make_uniq<ColumnRefExpression>("Date");
   value_column = duckdb::make_uniq<ColumnRefExpression>("Adj Close");
- duckdb::vector<duckdb::unique_ptr<ParsedExpression>> children_max;
+  duckdb::vector<duckdb::unique_ptr<ParsedExpression>> children_max;
   children_max.emplace_back(std::move(value_column));
   children_max.emplace_back(std::move(date_column));
   auto arg_max =

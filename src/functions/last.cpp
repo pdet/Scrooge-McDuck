@@ -1,6 +1,7 @@
 #include "functions/functions.hpp"
 #include "duckdb/function/function_set.hpp"
 #include "duckdb/parser/parsed_data/create_aggregate_function_info.hpp"
+#include "duckdb/common/helper.hpp"
 
 namespace scrooge {
 
@@ -17,9 +18,9 @@ struct LastScroogeOperation {
   }
 
   template <class A_TYPE, class B_TYPE, class STATE, class OP>
-  static void
-  Operation(STATE &state,
-            const A_TYPE &x_data, const B_TYPE &y_data, duckdb::AggregateBinaryInput &idata) {
+  static void Operation(STATE &state, const A_TYPE &x_data,
+                        const B_TYPE &y_data,
+                        duckdb::AggregateBinaryInput &idata) {
 
     const auto time = y_data;
     if (!state.executed || time > state.last_time) {
@@ -43,7 +44,8 @@ struct LastScroogeOperation {
   }
 
   template <class T, class STATE>
-  static void Finalize(STATE &state, T &target, duckdb::AggregateFinalizeData &finalize_data) {
+  static void Finalize(STATE &state, T &target,
+                       duckdb::AggregateFinalizeData &finalize_data) {
     if (!state.executed) {
       finalize_data.ReturnNull();
     } else {
@@ -54,8 +56,9 @@ struct LastScroogeOperation {
   static bool IgnoreNull() { return true; }
 };
 
-duckdb::unique_ptr<duckdb::FunctionData> BindDoupleLastFunctionDecimal(duckdb::ClientContext &context, duckdb::AggregateFunction &function,
-                                                              duckdb::vector<duckdb::unique_ptr<duckdb::Expression>> &arguments) {
+duckdb::unique_ptr<duckdb::FunctionData> BindDoupleLastFunctionDecimal(
+    duckdb::ClientContext &context, duckdb::AggregateFunction &function,
+    duckdb::vector<duckdb::unique_ptr<duckdb::Expression>> &arguments) {
   auto &decimal_type = arguments[0]->return_type;
   switch (decimal_type.InternalType()) {
   case duckdb::PhysicalType::INT16: {

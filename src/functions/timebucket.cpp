@@ -1,6 +1,7 @@
 #include "duckdb/function/function_set.hpp"
 #include "duckdb/parser/parsed_data/create_scalar_function_info.hpp"
 #include "functions/functions.hpp"
+#include "duckdb/common/helper.hpp"
 
 namespace scrooge {
 
