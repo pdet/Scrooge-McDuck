@@ -92,7 +92,7 @@ GeneratePlan(YahooFunctionData &bind_data) {
   column_def.emplace_back("Volume", duckdb::LogicalType::HUGEINT);
   duckdb::named_parameter_map_t options;
   duckdb::vector<duckdb::string> urls{url};
-  auto csv_rel = duckdb::make_shared_ptr<duckdb::ReadCSVRelation>(
+  auto csv_rel = make_shared_ptr<duckdb::ReadCSVRelation>(
       bind_data.conn->context, urls, std::move(options));
   csv_rel->AddNamedParameter("HEADER", true);
   csv_rel->AddNamedParameter("NULLSTR", "null");
@@ -108,7 +108,7 @@ GeneratePlan(YahooFunctionData &bind_data) {
   expressions.emplace_back(std::move(star_exp));
   aliases.emplace_back("star");
 
-  auto proj_rel = duckdb::make_shared_ptr<duckdb::ProjectionRelation>(
+  auto proj_rel = make_shared_ptr<duckdb::ProjectionRelation>(
       std::move(csv_rel), std::move(expressions), aliases);
   return proj_rel;
 }

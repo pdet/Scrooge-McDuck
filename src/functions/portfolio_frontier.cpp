@@ -99,7 +99,7 @@ PortfolioFrontier::Bind(duckdb::ClientContext &context,
   duckdb::vector<Value> parameters{input.inputs[0], input.inputs[1],
                                    input.inputs[2], "1d"};
 
-  auto tbl_rel = duckdb::make_shared_ptr<duckdb::TableFunctionRelation>(
+  auto tbl_rel = make_shared_ptr<duckdb::TableFunctionRelation>(
       conn->context, "yahoo_finance", std::move(parameters));
   std::vector<duckdb::unique_ptr<duckdb::ParsedExpression>> expressions;
   std::vector<duckdb::unique_ptr<duckdb::ParsedExpression>> groups;
@@ -151,7 +151,7 @@ PortfolioFrontier::Bind(duckdb::ClientContext &context,
   aggr_expression.emplace_back(std::move(symbol_column));
   aggr_expression.emplace_back(std::move(volatility));
   aggr_expression.emplace_back(std::move(expected_return));
-  auto aggr_rel = duckdb::make_shared_ptr<duckdb::AggregateRelation>(
+  auto aggr_rel = make_shared_ptr<duckdb::AggregateRelation>(
       tbl_rel, std::move(aggr_expression), std::move(groups));
   auto plan = std::move(aggr_rel);
 
