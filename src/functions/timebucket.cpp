@@ -1,6 +1,7 @@
 #include "duckdb/function/function_set.hpp"
 #include "duckdb/parser/parsed_data/create_scalar_function_info.hpp"
 #include "functions/functions.hpp"
+#include "duckdb/common/helper.hpp"
 
 namespace scrooge {
 
@@ -89,6 +90,6 @@ void TimeBucketScrooge::RegisterFunction(duckdb::Connection &conn,
       {duckdb::LogicalType::TIMESTAMP, duckdb::LogicalType::INTERVAL},
       duckdb::LogicalType::TIMESTAMP, TimeBucketFunction));
   duckdb::CreateScalarFunctionInfo timebucket_info(timebucket);
-  catalog.CreateFunction(*conn.context, &timebucket_info);
+  catalog.CreateFunction(*conn.context, timebucket_info);
 }
 } // namespace scrooge

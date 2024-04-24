@@ -3,6 +3,7 @@ require scrooge
 #Corner cases
 statement error
 select timebucket()
+----
 
 query I
 select timebucket(NULL,NULL)
@@ -57,13 +58,13 @@ select timebucket(a, '5S'::interval )  from test;
 NULL
 
 query I
-select count from (select timebucket(a, '5S'::interval ) as buckets, count(*) as count from test group by buckets);
+select count from (select timebucket(a, '5S'::interval ) as buckets, count(*) as count from test group by buckets) order by all;
 ----
+1
+1
+2
+2
 5
-2
-2
-1
-1
 
 statement ok
 drop table test
@@ -101,10 +102,10 @@ select timebucket(a, '5S'::interval )  from test;
 NULL
 
 query I
-select count from (select timebucket(a, '5S'::interval ) as buckets, count(*) as count from test group by buckets);
+select count from (select timebucket(a, '5S'::interval ) as buckets, count(*) as count from test group by buckets) order by all;
 ----
+1
+1
+2
+2
 5
-2
-2
-1
-1

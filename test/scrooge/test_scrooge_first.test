@@ -3,6 +3,7 @@ require scrooge
 #Corner cases
 statement error
 select first_s()
+----
 
 query I
 select first_s(NULL,NULL)

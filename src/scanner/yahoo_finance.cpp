@@ -1,9 +1,11 @@
-#include "functions/scanner.hpp"
-#include "duckdb/execution/operator/persistent/csv_reader_options.hpp"
-#include "duckdb/main/relation/read_csv_relation.hpp"
+#include "duckdb/common/named_parameter_map.hpp"
+#include "duckdb/execution/operator/csv_scanner/csv_reader_options.hpp"
 #include "duckdb/main/relation/projection_relation.hpp"
-#include "duckdb/parser/expression/star_expression.hpp"
+#include "duckdb/main/relation/read_csv_relation.hpp"
 #include "duckdb/parser/expression/constant_expression.hpp"
+#include "duckdb/parser/expression/star_expression.hpp"
+#include "functions/scanner.hpp"
+#include "duckdb/common/helper.hpp"
 
 namespace scrooge {
 
@@ -43,7 +45,7 @@ struct YahooFunctionData : public duckdb::TableFunctionData {
                        : to_epoch;
     symbol = symbols[0];
   }
-  std::shared_ptr<duckdb::Relation> plan;
+  duckdb::shared_ptr<duckdb::Relation> plan;
   duckdb::unique_ptr<duckdb::Connection> conn;
   std::vector<std::string> symbols;
   std::string symbol;
@@ -88,13 +90,15 @@ GeneratePlan(YahooFunctionData &bind_data) {
   column_def.emplace_back("Close", duckdb::LogicalType::DOUBLE);
   column_def.emplace_back("Adj Close", duckdb::LogicalType::DOUBLE);
   column_def.emplace_back("Volume", duckdb::LogicalType::HUGEINT);
-  auto csv_rel = duckdb::make_shared<duckdb::ReadCSVRelation>(
-      bind_data.conn->context, url, std::move(column_def));
+  duckdb::named_parameter_map_t options;
+  duckdb::vector<duckdb::string> urls{url};
+  auto csv_rel = std::make_shared<duckdb::ReadCSVRelation>(
+      bind_data.conn->context, urls, std::move(options));
   csv_rel->AddNamedParameter("HEADER", true);
   csv_rel->AddNamedParameter("NULLSTR", "null");
   std::vector<duckdb::unique_ptr<duckdb::ParsedExpression>> expressions;
   auto star_exp = duckdb::make_uniq<duckdb::StarExpression>(csv_rel->name);
-  std::vector<std::string> aliases;
+  duckdb::vector<duckdb::string> aliases;
   if (bind_data.symbols.size() > 1) {
     auto constant_expression =
         duckdb::make_uniq<duckdb::ConstantExpression>(bind_data.symbol);
@@ -104,7 +108,7 @@ GeneratePlan(YahooFunctionData &bind_data) {
   expressions.emplace_back(std::move(star_exp));
   aliases.emplace_back("star");
 
-  auto proj_rel = duckdb::make_shared<duckdb::ProjectionRelation>(
+  auto proj_rel = std::make_shared<duckdb::ProjectionRelation>(
       std::move(csv_rel), std::move(expressions), aliases);
   return proj_rel;
 }
@@ -126,8 +130,8 @@ void ValidInterval(std::string &interval) {
 duckdb::unique_ptr<duckdb::FunctionData>
 YahooScanner::Bind(duckdb::ClientContext &context,
                    duckdb::TableFunctionBindInput &input,
-                   std::vector<duckdb::LogicalType> &return_types,
-                   std::vector<std::string> &names) {
+                   duckdb::vector<duckdb::LogicalType> &return_types,
+                   duckdb::vector<duckdb::string> &names) {
   if (input.inputs[0].type() != duckdb::LogicalType::VARCHAR &&
       input.inputs[0].type() !=
           duckdb::LogicalType::LIST(duckdb::LogicalType::VARCHAR)) {
