@@ -1,3 +1,7 @@
+# name: test/sql/scrooge/test_scrooge_last.test
+# description: Test last_s function
+# group: [scrooge]
+
 require scrooge
 
 #Corner cases

@@ -1,4 +1,4 @@
-# name: test/scrooge/test_portfolio_frontier.test
+# name: test/sql/scrooge/test_portfolio_frontier.test
 # description: Test Yahoo Finance Portfolio Frontier
 # group: [scrooge]
 
