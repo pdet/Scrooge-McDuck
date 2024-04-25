@@ -121,3 +121,4 @@ The result of our Candle-Stick aggregation can be seen below:
      alt="Scrooge-Candle-Stick"
      width=1000
      />
+
