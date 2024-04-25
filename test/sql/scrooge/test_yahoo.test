@@ -1,4 +1,4 @@
-# name: test/scrooge/test_yahoo.test
+# name: test/sql/scrooge/test_yahoo.test
 # description: Test Yahoo Finance Scanner
 # group: [scrooge]
 
@@ -8,15 +8,19 @@ require httpfs
 
 statement error
 select * FROM yahoo_finance()
+----
 
 statement error
 select * FROM yahoo_finance("^aeouhae", "2017-12-01"::DATE, "2017-12-10"::DATE, "1d")
+----
 
 statement error
 select * FROM yahoo_finance("^GSPC", "2017-12-11"::DATE, "2017-12-10"::DATE, "1d")
+----
 
 statement error
 select * FROM yahoo_finance("^GSPC", "2017-12-11"::DATE, "2017-12-10"::DATE, -1)
+----
 
 query IIIIIII
 select * FROM yahoo_finance("^GSPC", "2017-12-01"::DATE, "2017-12-10"::DATE, "1d")
@@ -165,9 +169,11 @@ select * FROM yahoo_finance("BTC-USD", "2015-01-01"::DATE, "2015-04-01"::DATE, "
 
 statement error
 select * FROM yahoo_finance(["oejoeaijeao"], "2015-01-01"::DATE, "2015-04-01"::DATE, "1d");
+----
 
 statement error
 select * FROM yahoo_finance([], "2015-01-01"::DATE, "2015-04-01"::DATE, "1d");
+----
 
 # Try Big Data
 query IIIIIIII
@@ -330,23 +336,28 @@ BTC-USD	2015-04-01	244.223007	247.541	241.160004	247.272003	247.272003	22877200
 # Interval must be a string accepted by the yahoo api
 statement error
 select * FROM yahoo_finance("^GSPC", "2017-12-11"::DATE, "2017-12-12"::DATE, "bla")
+----
 
 # Periods can't be equal
 statement error
 select * FROM yahoo_finance("^GSPC", "2017-12-11"::DATE, "2017-12-11"::DATE, "1d")
+----
 
 # Interval can't be bigger than period
 statement error
 select * FROM yahoo_finance("^GSPC", "2017-12-11"::DATE, "2017-12-15"::DATE, "1mo")
+----
 
 
 # Start period must be castable to date
 statement error
 select * FROM yahoo_finance("^GSPC", "bla", "2017-12-15"::DATE, "1d")
+----
 
 # End period must be castable to date
 statement error
 select * FROM yahoo_finance("^GSPC", "2017-12-15"::DATE, "bla", "1d")
+----
 
 query I
 select volatility(close) FROM yahoo_finance("^GSPC", "2017-12-01"::DATE, "2017-12-10"::DATE, "1d")

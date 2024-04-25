@@ -1,8 +1,13 @@
+# name: test/sql/scrooge/test_scrooge_first.test
+# description: Test first_s function
+# group: [scrooge]
+
 require scrooge
 
 #Corner cases
 statement error
 select first_s()
+----
 
 query I
 select first_s(NULL,NULL)
