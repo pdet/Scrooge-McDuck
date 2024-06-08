@@ -97,7 +97,7 @@ PortfolioFrontier::Bind(ClientContext &context, TableFunctionBindInput &input,
                            "1d"};
 
   auto tbl_rel = make_shared_ptr<TableFunctionRelation>(
-      conn->context, "yahoo_finance", move(parameters));
+      conn->context, "yahoo_finance", std::move(parameters));
   vector<unique_ptr<ParsedExpression>> expressions;
   vector<unique_ptr<ParsedExpression>> groups;
   auto group_column = make_uniq<ColumnRefExpression>("symbol");
@@ -105,14 +105,16 @@ PortfolioFrontier::Bind(ClientContext &context, TableFunctionBindInput &input,
   auto value_column = make_uniq<ColumnRefExpression>("Adj Close");
   vector<unique_ptr<ParsedExpression>> children;
   children.emplace_back(move(value_column));
-  auto volatility = make_uniq<FunctionExpression>("stddev_pop", move(children));
+  auto volatility =
+      make_uniq<FunctionExpression>("stddev_pop", std::move(children));
 
   auto date_column = make_uniq<ColumnRefExpression>("Date");
   value_column = make_uniq<ColumnRefExpression>("Adj Close");
   vector<unique_ptr<ParsedExpression>> children_min;
   children_min.emplace_back(move(value_column));
   children_min.emplace_back(move(date_column));
-  auto arg_min = make_uniq<FunctionExpression>("arg_min", move(children_min));
+  auto arg_min =
+      make_uniq<FunctionExpression>("arg_min", std::move(children_min));
 
   date_column = make_uniq<ColumnRefExpression>("Date");
   value_column = make_uniq<ColumnRefExpression>("Adj Close");
@@ -120,33 +122,35 @@ PortfolioFrontier::Bind(ClientContext &context, TableFunctionBindInput &input,
   children_min_2.emplace_back(move(value_column));
   children_min_2.emplace_back(move(date_column));
   auto arg_min_2 =
-      make_uniq<FunctionExpression>("arg_min", move(children_min_2));
+      make_uniq<FunctionExpression>("arg_min", std::move(children_min_2));
 
   date_column = make_uniq<ColumnRefExpression>("Date");
   value_column = make_uniq<ColumnRefExpression>("Adj Close");
   vector<unique_ptr<ParsedExpression>> children_max;
   children_max.emplace_back(move(value_column));
   children_max.emplace_back(move(date_column));
-  auto arg_max = make_uniq<FunctionExpression>("arg_max", move(children_max));
+  auto arg_max =
+      make_uniq<FunctionExpression>("arg_max", std::move(children_max));
 
   vector<unique_ptr<ParsedExpression>> substract_children;
   substract_children.emplace_back(move(arg_max));
   substract_children.emplace_back(move(arg_min));
-  auto subtract = make_uniq<FunctionExpression>("-", move(substract_children));
+  auto subtract =
+      make_uniq<FunctionExpression>("-", std::move(substract_children));
 
   vector<unique_ptr<ParsedExpression>> expected_return_children;
   expected_return_children.emplace_back(move(subtract));
   expected_return_children.emplace_back(move(arg_min_2));
   auto expected_return =
-      make_uniq<FunctionExpression>("/", move(expected_return_children));
+      make_uniq<FunctionExpression>("/", std::move(expected_return_children));
   auto symbol_column = make_uniq<ColumnRefExpression>("symbol");
   vector<unique_ptr<ParsedExpression>> aggr_expression;
   aggr_expression.emplace_back(move(symbol_column));
   aggr_expression.emplace_back(move(volatility));
   aggr_expression.emplace_back(move(expected_return));
   auto aggr_rel = make_shared_ptr<AggregateRelation>(
-      tbl_rel, move(aggr_expression), move(groups));
-  auto plan = move(aggr_rel);
+      tbl_rel, std::move(aggr_expression), std::move(groups));
+  auto plan = std::move(aggr_rel);
 
   child_list_t<LogicalType> children_struct;
   children_struct.emplace_back(make_pair("symbol", LogicalType::VARCHAR));
@@ -176,7 +180,7 @@ PortfolioFrontier::Bind(ClientContext &context, TableFunctionBindInput &input,
   }
   result->portfolio_stats =
       calculate_efficient_frontier(result->portfolio, result->n);
-  return move(result);
+  return std::move(result);
 }
 void PortfolioFrontier::Scan(ClientContext &context, TableFunctionInput &data_p,
                              DataChunk &output) {

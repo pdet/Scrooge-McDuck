@@ -111,8 +111,8 @@ shared_ptr<ProjectionRelation> GeneratePlan(YahooFunctionData &bind_data) {
   expressions.emplace_back(move(star_exp));
   aliases.emplace_back("star");
 
-  auto proj_rel =
-      make_shared_ptr<ProjectionRelation>(csv_rel, move(expressions), aliases);
+  auto proj_rel = make_shared_ptr<ProjectionRelation>(
+      csv_rel, std::move(expressions), aliases);
   return proj_rel;
 }
 
@@ -174,7 +174,7 @@ unique_ptr<FunctionData> YahooScanner::Bind(ClientContext &context,
     return_types.emplace_back(column.Type());
     names.emplace_back(column.Name());
   }
-  return move(result);
+  return std::move(result);
 }
 void YahooScanner::Scan(ClientContext &context, TableFunctionInput &data_p,
                         DataChunk &output) {
