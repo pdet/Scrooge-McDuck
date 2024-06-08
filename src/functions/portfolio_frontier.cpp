@@ -10,20 +10,18 @@
 #include "duckdb/parser/expression/function_expression.hpp"
 #include "duckdb/common/helper.hpp"
 
+namespace duckdb {
 namespace scrooge {
 
-using namespace std;
-using namespace duckdb;
-
 struct Asset {
-  std::string symbol;
+  string symbol;
   double volatility;
   double expected_return;
 };
 
 struct Portfolio {
-  duckdb::vector<Asset> assets;
-  duckdb::vector<duckdb::vector<double>> weights;
+  vector<Asset> assets;
+  vector<vector<double>> weights;
 };
 
 double calculate_portfolio_return(Portfolio &portfolio) {
@@ -44,8 +42,8 @@ double calculate_portfolio_volatility(Portfolio &portfolio) {
   return sqrt(portfolio_volatility);
 }
 
-duckdb::vector<double> generate_random_weights(int n) {
-  duckdb::vector<double> weights(n);
+vector<double> generate_random_weights(int n) {
+  vector<double> weights(n);
   double sum = 0.0;
   for (int i = 0; i < n; i++) {
     weights[i] = (double)rand() / RAND_MAX;
@@ -57,9 +55,9 @@ duckdb::vector<double> generate_random_weights(int n) {
   return weights;
 }
 
-duckdb::vector<pair<double, double>>
-calculate_efficient_frontier(Portfolio &portfolio, int n) {
-  duckdb::vector<pair<double, double>> efficient_frontier(n);
+vector<pair<double, double>> calculate_efficient_frontier(Portfolio &portfolio,
+                                                          int n) {
+  vector<pair<double, double>> efficient_frontier(n);
   for (int i = 0; i < n; i++) {
     portfolio.weights.emplace_back(
         generate_random_weights(portfolio.assets.size()));
@@ -71,87 +69,86 @@ calculate_efficient_frontier(Portfolio &portfolio, int n) {
   return efficient_frontier;
 }
 
-struct PortfolioFrontierData : public duckdb::TableFunctionData {
+struct PortfolioFrontierData : public TableFunctionData {
   Portfolio portfolio;
-  duckdb::vector<pair<double, double>> portfolio_stats;
+  vector<pair<double, double>> portfolio_stats;
   int n;
   int cur = 0;
 };
 
-duckdb::unique_ptr<duckdb::FunctionData>
-PortfolioFrontier::Bind(duckdb::ClientContext &context,
-                        duckdb::TableFunctionBindInput &input,
-                        duckdb::vector<duckdb::LogicalType> &return_types,
-                        duckdb::vector<duckdb::string> &names) {
-  auto result = duckdb::make_uniq<PortfolioFrontierData>();
-  auto conn = duckdb::make_uniq<duckdb::Connection>(*context.db);
-  if (input.inputs[1].type() != duckdb::LogicalType::VARCHAR &&
-      input.inputs[1].type() != duckdb::LogicalType::DATE) {
-    throw duckdb::InvalidInputException(
+unique_ptr<FunctionData>
+PortfolioFrontier::Bind(ClientContext &context, TableFunctionBindInput &input,
+                        vector<LogicalType> &return_types,
+                        vector<string> &names) {
+  auto result = make_uniq<PortfolioFrontierData>();
+  auto conn = make_uniq<Connection>(*context.db);
+  if (input.inputs[1].type() != LogicalType::VARCHAR &&
+      input.inputs[1].type() != LogicalType::DATE) {
+    throw InvalidInputException(
         "Start Period must be a Date or a Date-VARCHAR ");
   }
-  if (input.inputs[2].type() != duckdb::LogicalType::VARCHAR &&
-      input.inputs[2].type() != duckdb::LogicalType::DATE) {
-    throw duckdb::InvalidInputException(
+  if (input.inputs[2].type() != LogicalType::VARCHAR &&
+      input.inputs[2].type() != LogicalType::DATE) {
+    throw InvalidInputException(
         "Start Period must be a Date or a Date-VARCHAR ");
   }
   result->n = input.inputs[3].GetValue<int>();
-  duckdb::vector<Value> parameters{input.inputs[0], input.inputs[1],
-                                   input.inputs[2], "1d"};
+  vector<Value> parameters{input.inputs[0], input.inputs[1], input.inputs[2],
+                           "1d"};
 
-  auto tbl_rel = duckdb::make_shared_ptr<duckdb::TableFunctionRelation>(
+  auto tbl_rel = make_shared_ptr<TableFunctionRelation>(
       conn->context, "yahoo_finance", std::move(parameters));
-  std::vector<duckdb::unique_ptr<duckdb::ParsedExpression>> expressions;
-  std::vector<duckdb::unique_ptr<duckdb::ParsedExpression>> groups;
-  auto group_column = duckdb::make_uniq<ColumnRefExpression>("symbol");
+  vector<unique_ptr<ParsedExpression>> expressions;
+  vector<unique_ptr<ParsedExpression>> groups;
+  auto group_column = make_uniq<ColumnRefExpression>("symbol");
 
-  auto value_column = duckdb::make_uniq<ColumnRefExpression>("Adj Close");
-  duckdb::vector<duckdb::unique_ptr<ParsedExpression>> children;
+  auto value_column = make_uniq<ColumnRefExpression>("Adj Close");
+  vector<unique_ptr<ParsedExpression>> children;
   children.emplace_back(std::move(value_column));
   auto volatility =
-      duckdb::make_uniq<FunctionExpression>("stddev_pop", std::move(children));
+      make_uniq<FunctionExpression>("stddev_pop", std::move(children));
 
-  auto date_column = duckdb::make_uniq<ColumnRefExpression>("Date");
-  value_column = duckdb::make_uniq<ColumnRefExpression>("Adj Close");
-  duckdb::vector<duckdb::unique_ptr<ParsedExpression>> children_min;
+  auto date_column = make_uniq<ColumnRefExpression>("Date");
+  value_column = make_uniq<ColumnRefExpression>("Adj Close");
+  vector<unique_ptr<ParsedExpression>> children_min;
   children_min.emplace_back(std::move(value_column));
   children_min.emplace_back(std::move(date_column));
   auto arg_min =
-      duckdb::make_uniq<FunctionExpression>("arg_min", std::move(children_min));
+      make_uniq<FunctionExpression>("arg_min", std::move(children_min));
 
-  date_column = duckdb::make_uniq<ColumnRefExpression>("Date");
-  value_column = duckdb::make_uniq<ColumnRefExpression>("Adj Close");
-  duckdb::vector<duckdb::unique_ptr<ParsedExpression>> children_min_2;
+  date_column = make_uniq<ColumnRefExpression>("Date");
+  value_column = make_uniq<ColumnRefExpression>("Adj Close");
+  vector<unique_ptr<ParsedExpression>> children_min_2;
   children_min_2.emplace_back(std::move(value_column));
   children_min_2.emplace_back(std::move(date_column));
-  auto arg_min_2 = duckdb::make_uniq<FunctionExpression>(
-      "arg_min", std::move(children_min_2));
+  auto arg_min_2 =
+      make_uniq<FunctionExpression>("arg_min", std::move(children_min_2));
 
-  date_column = duckdb::make_uniq<ColumnRefExpression>("Date");
-  value_column = duckdb::make_uniq<ColumnRefExpression>("Adj Close");
-  duckdb::vector<duckdb::unique_ptr<ParsedExpression>> children_max;
+  date_column = make_uniq<ColumnRefExpression>("Date");
+  value_column = make_uniq<ColumnRefExpression>("Adj Close");
+  vector<unique_ptr<ParsedExpression>> children_max;
   children_max.emplace_back(std::move(value_column));
   children_max.emplace_back(std::move(date_column));
   auto arg_max =
-      duckdb::make_uniq<FunctionExpression>("arg_max", std::move(children_max));
+      make_uniq<FunctionExpression>("arg_max", std::move(children_max));
 
-  duckdb::vector<duckdb::unique_ptr<ParsedExpression>> substract_children;
+  vector<unique_ptr<ParsedExpression>> substract_children;
   substract_children.emplace_back(std::move(arg_max));
   substract_children.emplace_back(std::move(arg_min));
   auto subtract =
-      duckdb::make_uniq<FunctionExpression>("-", std::move(substract_children));
+      make_uniq<FunctionExpression>("-", std::move(substract_children));
 
-  duckdb::vector<duckdb::unique_ptr<ParsedExpression>> expected_return_children;
+  vector<unique_ptr<ParsedExpression>> expected_return_children;
   expected_return_children.emplace_back(std::move(subtract));
   expected_return_children.emplace_back(std::move(arg_min_2));
-  auto expected_return = duckdb::make_uniq<FunctionExpression>(
-      "/", std::move(expected_return_children));
-  auto symbol_column = duckdb::make_uniq<ColumnRefExpression>("symbol");
-  duckdb::vector<duckdb::unique_ptr<ParsedExpression>> aggr_expression;
+  auto expected_return =
+      make_uniq<FunctionExpression>("/", std::move(expected_return_children));
+  auto symbol_column = make_uniq<ColumnRefExpression>("symbol");
+  vector<unique_ptr<ParsedExpression>> aggr_expression;
   aggr_expression.emplace_back(std::move(symbol_column));
   aggr_expression.emplace_back(std::move(volatility));
   aggr_expression.emplace_back(std::move(expected_return));
-  auto aggr_rel = duckdb::make_shared_ptr<duckdb::AggregateRelation>(
+  auto aggr_rel = make_shared_ptr<AggregateRelation>(
       tbl_rel, std::move(aggr_expression), std::move(groups));
   auto plan = std::move(aggr_rel);
 
@@ -172,8 +169,7 @@ PortfolioFrontier::Bind(duckdb::ClientContext &context,
   while (result_chunk) {
     for (idx_t i = 0; i < result_chunk->size(); i++) {
       Asset asset;
-      asset.symbol =
-          result_chunk->data[0].GetValue(i).GetValueUnsafe<std::string>();
+      asset.symbol = result_chunk->data[0].GetValue(i).GetValueUnsafe<string>();
       asset.volatility =
           result_chunk->data[1].GetValue(i).GetValueUnsafe<double>();
       asset.expected_return =
@@ -186,9 +182,8 @@ PortfolioFrontier::Bind(duckdb::ClientContext &context,
       calculate_efficient_frontier(result->portfolio, result->n);
   return std::move(result);
 }
-void PortfolioFrontier::Scan(duckdb::ClientContext &context,
-                             duckdb::TableFunctionInput &data_p,
-                             duckdb::DataChunk &output) {
+void PortfolioFrontier::Scan(ClientContext &context, TableFunctionInput &data_p,
+                             DataChunk &output) {
 
   auto &data = (PortfolioFrontierData &)*data_p.bind_data;
   idx_t cur_out = 0;
@@ -196,7 +191,7 @@ void PortfolioFrontier::Scan(duckdb::ClientContext &context,
     if (cur_out == STANDARD_VECTOR_SIZE) {
       break;
     }
-    duckdb::vector<Value> list;
+    vector<Value> list;
     for (idx_t j = 0; j < data.portfolio.assets.size(); j++) {
       child_list_t<Value> children_struct;
       children_struct.emplace_back(
@@ -213,3 +208,4 @@ void PortfolioFrontier::Scan(duckdb::ClientContext &context,
   output.SetCardinality(cur_out);
 }
 } // namespace scrooge
+} // namespace duckdb

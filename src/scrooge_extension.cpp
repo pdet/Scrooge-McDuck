@@ -11,6 +11,7 @@
 #include "duckdb/parser/parsed_data/create_pragma_function_info.hpp"
 #include "duckdb/parser/parsed_data/create_table_function_info.hpp"
 #include <iostream>
+#include "duckdb/parser/parsed_data/create_type_info.hpp"
 
 namespace duckdb {
 
@@ -32,7 +33,7 @@ void ScroogeExtension::Load(DuckDB &db) {
   CreateTableFunctionInfo yahoo_scanner_info(yahoo_scanner);
   catalog.CreateTableFunction(*con.context, &yahoo_scanner_info);
 
-  // Create Yahoo Scanner Function
+  // Create Portfolio Frontier Function
   TableFunction portfolio_frontier(
       "portfolio_frontier",
       {duckdb::LogicalType::LIST(duckdb::LogicalType::VARCHAR),
@@ -41,6 +42,42 @@ void ScroogeExtension::Load(DuckDB &db) {
   CreateTableFunctionInfo portfolio_frontier_info(portfolio_frontier);
   catalog.CreateTableFunction(*con.context, &portfolio_frontier_info);
 
+  // Create Ethereum Scanner Function
+  TableFunction ethereum_rpc_scanner(
+      "read_eth",
+      {LogicalType::VARCHAR, LogicalType::VARCHAR, LogicalType::BIGINT,
+       LogicalType::BIGINT},
+      scrooge::EthRPC::Scan, scrooge::EthRPC::Bind, scrooge::EthRPC::InitGlobal,
+      scrooge::EthRPC::InitLocal);
+
+  ethereum_rpc_scanner.named_parameters["blocks_per_thread"] =
+      LogicalType::BIGINT;
+
+  CreateTableFunctionInfo ethereum_rpc_scanner_info(ethereum_rpc_scanner);
+  catalog.CreateTableFunction(*con.context, &ethereum_rpc_scanner_info);
+
+  auto &config = DBConfig::GetConfig(*db.instance);
+
+  config.AddExtensionOption("eth_node_url",
+                            "URL of Ethereum node to be queried",
+                            LogicalType::VARCHAR, "http://127.0.0.1:8545");
+
+  auto &temp_catalog = Catalog::GetCatalog(*con.context, TEMP_CATALOG);
+  // Create CSV_ERROR_TYPE ENUM
+  string enum_name = "ETH_EVENT";
+  Vector order_errors(LogicalType::VARCHAR, 7);
+  order_errors.SetValue(0, "Transfer");
+  order_errors.SetValue(1, "Approval");
+  order_errors.SetValue(2, "Sync");
+  order_errors.SetValue(3, "TransferSingle");
+  order_errors.SetValue(4, "TransferBatch");
+  order_errors.SetValue(5, "ApprovalForAll");
+  order_errors.SetValue(6, "Unknown");
+  LogicalType enum_type = LogicalType::ENUM(enum_name, order_errors, 7);
+  auto type_info = make_uniq<CreateTypeInfo>(enum_name, enum_type);
+  type_info->temporary = true;
+  type_info->on_conflict = OnCreateConflict::IGNORE_ON_CONFLICT;
+  temp_catalog.CreateType(*con.context, *type_info);
   con.Commit();
 }
 
