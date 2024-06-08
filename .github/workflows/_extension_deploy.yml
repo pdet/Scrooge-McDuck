@@ -22,7 +22,7 @@ on:
       exclude_archs:
         required: false
         type: string
-        default: "windows_amd64"
+        default: ""
       # Whether to upload this deployment as the latest. This may overwrite a previous deployment.
       deploy_latest:
         required: false
