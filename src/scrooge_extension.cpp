@@ -45,18 +45,22 @@ void ScroogeExtension::Load(DuckDB &db) {
   // Create Ethereum Scanner Function
   TableFunction ethereum_rpc_scanner(
       "read_eth",
-      {LogicalType::VARCHAR, LogicalType::VARCHAR, LogicalType::VARCHAR,
-       LogicalType::VARCHAR},
-      scrooge::EthRPC::Scan, scrooge::EthRPC::Bind);
+      {LogicalType::VARCHAR, LogicalType::VARCHAR, LogicalType::BIGINT,
+       LogicalType::BIGINT},
+      scrooge::EthRPC::Scan, scrooge::EthRPC::Bind, scrooge::EthRPC::InitGlobal,
+      scrooge::EthRPC::InitLocal);
+
+  ethereum_rpc_scanner.named_parameters["blocks_per_thread"] =
+      LogicalType::BIGINT;
+
   CreateTableFunctionInfo ethereum_rpc_scanner_info(ethereum_rpc_scanner);
   catalog.CreateTableFunction(*con.context, &ethereum_rpc_scanner_info);
-
 
   auto &config = DBConfig::GetConfig(*db.instance);
 
   config.AddExtensionOption("eth_node_url",
                             "URL of Ethereum node to be queried",
-                            LogicalType::VARCHAR);
+                            LogicalType::VARCHAR, "http://127.0.0.1:8545");
 
   auto &temp_catalog = Catalog::GetCatalog(*con.context, TEMP_CATALOG);
   // Create CSV_ERROR_TYPE ENUM
@@ -74,9 +78,7 @@ void ScroogeExtension::Load(DuckDB &db) {
   type_info->temporary = true;
   type_info->on_conflict = OnCreateConflict::IGNORE_ON_CONFLICT;
   temp_catalog.CreateType(*con.context, *type_info);
-
-    con.Commit();
-
+  con.Commit();
 }
 
 std::string ScroogeExtension::Name() { return "scrooge"; }
