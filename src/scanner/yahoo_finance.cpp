@@ -34,7 +34,7 @@ struct YahooFunctionData : public TableFunctionData {
   YahooFunctionData(unique_ptr<Connection> conn_p, vector<string> &symbol_p,
                     int64_t from_epoch_p, int64_t to_epoch_p,
                     string &interval_p)
-      : conn(move(conn_p)), symbols(symbol_p), from_epoch(from_epoch_p),
+      : conn(std::move(conn_p)), symbols(symbol_p), from_epoch(from_epoch_p),
         to_epoch(to_epoch_p), interval(interval_p) {
     auto interval_epoch = IntervalInEpoch(interval);
     // We have to do this hacky thing to keep yahoo finance requests happy
@@ -105,10 +105,10 @@ shared_ptr<ProjectionRelation> GeneratePlan(YahooFunctionData &bind_data) {
   vector<string> aliases;
   if (bind_data.symbols.size() > 1) {
     auto constant_expression = make_uniq<ConstantExpression>(bind_data.symbol);
-    expressions.emplace_back(move(constant_expression));
+    expressions.emplace_back(std::move(constant_expression));
     aliases.emplace_back("symbol");
   }
-  expressions.emplace_back(move(star_exp));
+  expressions.emplace_back(std::move(star_exp));
   aliases.emplace_back("star");
 
   auto proj_rel = make_shared_ptr<ProjectionRelation>(

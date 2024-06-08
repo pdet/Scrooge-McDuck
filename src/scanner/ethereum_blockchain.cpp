@@ -35,9 +35,9 @@ public:
   EthGetLogsRequest(uint32_t id, string address, string topic,
                     int64_t from_block_p, int64_t to_block_p,
                     int64_t blocks_per_thread_p, string rpc_url_p)
-      : id(id), address(move(address)), topic(move(topic)),
+      : id(id), address(std::move(address)), topic(std::move(topic)),
         from_block(from_block_p), to_block(to_block_p),
-        blocks_per_thread(blocks_per_thread_p), rpc_url(move(rpc_url_p)) {}
+        blocks_per_thread(blocks_per_thread_p), rpc_url(std::move(rpc_url_p)) {}
 
   const uint32_t id;
   const string address;
@@ -295,7 +295,7 @@ struct RCPRequest {
 
 struct RPCLocalState : public LocalTableFunctionState {
   explicit RPCLocalState(unique_ptr<RCPRequest> rpc_request_p)
-      : rpc_request(move(rpc_request_p)) {}
+      : rpc_request(std::move(rpc_request_p)) {}
 
   unique_ptr<RCPRequest> rpc_request;
 };
