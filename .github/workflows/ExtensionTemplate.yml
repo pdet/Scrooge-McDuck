@@ -160,9 +160,9 @@ jobs:
           git checkout ${{ matrix.duckdb_version }}
 
       - name: Setup vcpkg
-        uses: lukka/run-vcpkg@v11.1
+        uses: lukka/run-vcpkg@v11.5
         with:
-          vcpkgGitCommitId: a1a1cbc975abf909a6c8985a6a2b8fe20bbd9bd6
+          vcpkgGitCommitId: 5e0cab206a5ea620130caf672fce3e4a6b5666a1
 
       - name: Rename extension
         run: |
