@@ -25,6 +25,7 @@ set(EXTENSION_SOURCES
     src/functions/timebucket.cpp
     src/scanner/yahoo_finance.cpp
     src/scanner/ethereum_blockchain.cpp
+    src/scanner/ethereum_uniswap.cpp
     src/functions/aliases.cpp
     src/functions/portfolio_frontier.cpp)
 
