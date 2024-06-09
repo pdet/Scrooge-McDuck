@@ -5,30 +5,12 @@
 #include <sstream>
 #include <string>
 #include "json.hpp"
+#include "util/hex_converter.hpp"
+#include "util/eth_maps.hpp"
+#include "util/curl_util.hpp"
 
 namespace duckdb {
 namespace scrooge {
-
-class HexConverter {
-public:
-  static uint64_t HexToUBigInt(const string &hex) {
-    unsigned long long number = 0;
-    std::stringstream ss;
-    ss << hex << hex.substr(2);
-    ss >> number;
-    return number;
-  }
-  template <class T> static string NumericToHex(T value) {
-    std::stringstream stream_to;
-    stream_to << "0x" << std::hex << value;
-    return stream_to.str();
-  }
-
-  static bool IsHex(const string &hex) {
-    return hex.size() >= 2 && hex.substr(0, 2) == "0x";
-  }
-};
-
 class EthGetLogsRequest : public TableFunctionData {
 public:
   // Constructor to initialize the JSON-RPC request with given parameters
@@ -46,68 +28,6 @@ public:
   const idx_t to_block;
   const int64_t blocks_per_thread;
   const string rpc_url;
-};
-
-// Function to handle the curl response
-size_t WriteCallback(void *contents, size_t size, size_t nmemb, void *userp) {
-  ((string *)userp)->append((char *)contents, size * nmemb);
-  return size * nmemb;
-}
-
-// Event data structure
-struct Event {
-  string name;
-  vector<string> parameterTypes;
-  uint8_t id;
-};
-
-// Known event signatures and their descriptions
-unordered_map<string, Event> event_signatures = {
-    {"0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef",
-     {"Transfer", {"address", "address", "uint256"}, 0}},
-    {"0x8c5be1e5ebec7d5bd14f714f0f3a56d4af4fef1d7f7bb78a0c69d4cdb365d97e",
-     {"Approval", {"address", "address", "uint256"}, 1}},
-    {"0x1c411e9a96aaffc4e1b98a00ef4a86ce2e058f7d78f2c83971e57f36d39188c7",
-     {"Sync", {"uint112", "uint112"}, 2}},
-    {"0x4a39dc06d4c0dbc64b70b7bfa42387d156a1b455ad1583a19957f547256c22e5",
-     {"TransferSingle",
-      {"address", "address", "address", "uint256", "uint256"},
-      3}},
-    {"0xc3d58168cbe0a160b82265397fa6b10ff1c847f6b8df03e1d36e5e4bba925ed5",
-     {"TransferBatch",
-      {"address", "address", "address", "uint256[]", "uint256[]"},
-      4}},
-    {"0x17307eab39c17eae00a0c514c4b17d95e15ee86d924b1cf3b9c9dc7f59e3e5a1",
-     {"ApprovalForAll", {"address", "address", "bool"}, 5}}};
-
-unordered_map<string, string> token_adresses = {
-    {"ETH", "0x0000000000000000000000000000000000000000"},  // Ether
-    {"USDT", "0xdAC17F958D2ee523a2206206994597C13D831ec7"}, // Tether USD
-    {"USDC", "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606EB48"}, // USD Coin
-    {"DAI", "0x6B175474E89094C44Da98b954EedeAC495271d0F"},  // DAI Stablecoin
-    {"BNB", "0xB8c77482e45F1F44dE1745F52C74426C631bDD52"},  // Binance Coin
-    {"UNI", "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"},  // Uniswap
-    {"LINK", "0x514910771AF9Ca656af840dff83E8264EcF986CA"}, // Chainlink
-    {"WBTC", "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599"}, // Wrapped Bitcoin
-    {"LTC", "0x4338665CBB7B2485A8855A139b75D5e34AB0DB94"},  // Litecoin
-    {"BUSD", "0x4fabb145d64652a948d72533023f6e7a623c7c53"}  // Binance USD
-};
-
-unordered_map<string, string> event_to_hex_signatures = {
-    {"TRANSFER",
-     "0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef"},
-    {"APPROVAL",
-     "0x8c5be1e5ebec7d5bd14f714f13107d2b7b6e6d2027d8710d3b0b4f43363d9ab8"},
-    {"DEPOSIT",
-     "0xe1fffcc4923d54a4bdb6e0a28d0b6b7b2fb29a260555b24c75f6b1e7b3bfb123"},
-    {"WITHDRAWAL",
-     "0x7fcf26fc5cc6d7e6e05e1144b4b68871c514e020f1fc0d7d839bd09f61a8bc86"}};
-
-unordered_map<string, uint8_t> event_to_enum = {
-    {"Transfer", 0},
-    {"Approval", 1},
-    {"Sync", 2},
-    {"Transfer", 0},
 };
 
 unique_ptr<FunctionData> EthRPC::Bind(ClientContext &context,
@@ -147,7 +67,7 @@ unique_ptr<FunctionData> EthRPC::Bind(ClientContext &context,
       throw InvalidInputException(
           "Address must be either a hex or a valid token string");
     }
-    address = token_adresses[address];
+    address = token_adresses.at(address);
   }
 
   if (!(topic.size() >= 2 && topic.substr(0, 2) == "0x")) {
@@ -156,7 +76,7 @@ unique_ptr<FunctionData> EthRPC::Bind(ClientContext &context,
       throw InvalidInputException(
           "Event must be either a hex or a valid token string");
     }
-    topic = event_to_hex_signatures[topic];
+    topic = event_to_hex_signatures.at(topic);
   }
 
   //   address: Contract address emitting the log.
@@ -223,44 +143,7 @@ struct RCPRequest {
     // Let's do the RPC and parse the result
     // Get JSON formatted string
     string request = ToString();
-
-    CURL *curl;
-    CURLcode res;
-    string read_buffer;
-
-    curl_global_init(CURL_GLOBAL_DEFAULT);
-    curl = curl_easy_init();
-    if (curl) {
-
-      curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-
-      curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-      curl_easy_setopt(curl, CURLOPT_URL, bind_logs.rpc_url.c_str());
-
-      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request.c_str());
-
-      // Set headers
-      struct curl_slist *headers = nullptr;
-      headers = curl_slist_append(headers, "Content-Type: application/json");
-      curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-
-      // Set callback function to handle the response
-      curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-      curl_easy_setopt(curl, CURLOPT_WRITEDATA, &read_buffer);
-
-      // Perform the request
-      res = curl_easy_perform(curl);
-      if (res != CURLE_OK) {
-        string error = "curl_easy_perform() failed: ";
-        error = +curl_easy_strerror(res);
-        throw std::runtime_error(error);
-      }
-      // Clean up
-      curl_easy_cleanup(curl);
-      curl_global_cleanup();
-    }
-    // Parse the response JSON
-    json = nlohmann::json::parse(read_buffer);
+    json = CurlUtil::Request(bind_logs.rpc_url, request);
     if (!json.contains("result")) {
       // This is funky, we should error
       throw std::runtime_error("JSON Error: " + json.dump());
@@ -423,7 +306,7 @@ void EthRPC::Scan(ClientContext &context, TableFunctionInput &data_p,
     if (event_signatures.find(topics[0]) == event_signatures.end()) {
       event_type[row_idx] = 6;
     } else {
-      event_type[row_idx] = event_signatures[topics[0]].id;
+      event_type[row_idx] = event_signatures.at(topics[0]).id;
     }
 
     // Column 2 - Block Hash
