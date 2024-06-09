@@ -1,0 +1,188 @@
+# name: test/sql/scrooge/test_eth_roi.test
+# description: Test ETH scan ROI
+# group: [scrooge]
+
+require scrooge
+
+statement ok
+set eth_node_url= 'https://mempool.merkle.io/rpc/eth/pk_mbs_0b647b195065b3294a5254838a33d062';
+
+# Try some sad paths
+statement ok
+FROM read_eth(
+    'ANDY',
+    'Transfer',
+    20034078,
+    20034079
+)
+limit 1
+
+# End Query
+# ref: https://dune.com/queries/3595822/6058251
+#with token_balances as (
+#    select -- tokens sold
+#        -sum(cast(value as double) / pow(10, b.decimals)) as amount
+#        , "from" as address
+#    from erc20_ethereum.evt_Transfer a
+#    join tokens.erc20 b on a.contract_address = b.contract_address
+#    where a.contract_address = 0x68BbEd6A47194EFf1CF514B50Ea91895597fc91E
+#    group by 2
+#
+#    union all
+#
+#    select -- tokens bought
+#        sum(cast(value as double) / pow(10, b.decimals)) as amount
+#        , a.to as address
+#    from erc20_ethereum.evt_Transfer a
+#    join tokens.erc20 b on a.contract_address = b.contract_address
+#    where a.contract_address = 0x68BbEd6A47194EFf1CF514B50Ea91895597fc91E
+#    group by 2
+#),
+#
+#token_holders as (
+#    select
+#        address
+#        , sum(amount) as balance
+#    from token_balances
+#    group by 1
+#),
+#
+#token_trades as (
+#    select
+#        t.tx_from
+#        , t.token_bought_address
+#        , t.token_sold_address
+#        , t.amount_usd
+#        , case
+#            when t.token_bought_address = 0x68BbEd6A47194EFf1CF514B50Ea91895597fc91E then t.token_bought_amount
+#            else 0
+#        end as token_bought_amount
+#        , case
+#            when t.token_sold_address = 0x68BbEd6A47194EFf1CF514B50Ea91895597fc91E then t.token_sold_amount
+#            else 0
+#        end as token_sold_amount
+#        , t.block_time
+#        , h.balance
+#    from dex.trades t
+#    inner join token_holders h on t.tx_from = h.address
+#    where (t.token_sold_address = 0x68BbEd6A47194EFf1CF514B50Ea91895597fc91E or t.token_bought_address = 0x68BbEd6A47194EFf1CF514B50Ea91895597fc91E)
+#
+#    union all
+#
+#    select -- adding cowswap agg trades for now; needs to use dex_aggregator in the future
+#        c.trader as tx_from
+#        , c.buy_token_address as token_bought_address
+#        , c.sell_token_address as token_sold_address
+#        , c.usd_value as amount_usd
+#        , case
+#            when c.buy_token_address = 0x68BbEd6A47194EFf1CF514B50Ea91895597fc91E then c.units_bought
+#            else 0
+#        end as token_bought_amount
+#        , case
+#            when c.sell_token_address = 0x68BbEd6A47194EFf1CF514B50Ea91895597fc91E then c.units_sold
+#            else 0
+#        end as token_sold_amount
+#        , c.block_time
+#        , h.balance
+#    from cow_protocol_ethereum.trades c
+#    inner join token_holders h on c.trader = h.address
+#    where (c.sell_token_address = 0x68BbEd6A47194EFf1CF514B50Ea91895597fc91E or c.buy_token_address = 0x68BbEd6A47194EFf1CF514B50Ea91895597fc91E)
+#
+#    -- ######### HAS ISSUES RIGHT NOW, USING COWSWAP AGG ONLY ATM ###################
+#    -- select
+#    --     a.tx_from
+#    --     , a.token_bought_address
+#    --     , a.token_sold_address
+#    --     , a.amount_usd
+#    --     , case
+#    --         when a.token_bought_address = 0x68BbEd6A47194EFf1CF514B50Ea91895597fc91E then a.token_bought_amount
+#    --         else 0
+#    --     end as token_bought_amount
+#    --     , case
+#    --         when a.token_sold_address = 0x68BbEd6A47194EFf1CF514B50Ea91895597fc91E then a.token_sold_amount
+#    --         else 0
+#    --     end as token_sold_amount
+#    --     , a.block_time
+#    --     , h.balance
+#    -- from dex_aggregator.trades a
+#    -- inner join token_holders h on a.tx_from = h.address
+#    -- where (a.token_sold_address = 0x68BbEd6A47194EFf1CF514B50Ea91895597fc91E or a.token_bought_address = 0x68BbEd6A47194EFf1CF514B50Ea91895597fc91E)
+#),
+#
+#token_trading_volumes as (
+#    select
+#        tx_from
+#        , count(*) as number_trades
+#        , sum(token_bought_amount) as amount_token
+#        , sum(amount_usd) as amount_usd
+#        , max(balance) as balance
+#        , 'buy' as direction
+#    from token_trades
+#    where token_bought_address = 0x68BbEd6A47194EFf1CF514B50Ea91895597fc91E
+#    group by 1
+#
+#    union all
+#
+#    select
+#        tx_from
+#        , count(*) as number_trades
+#        , -sum(token_sold_amount) as amount_token
+#        , -sum(amount_usd) as amount_usd
+#        , max(balance) as balance
+#        , 'sell' as direction
+#    from token_trades
+#    where token_sold_address = 0x68BbEd6A47194EFf1CF514B50Ea91895597fc91E
+#    group by 1
+#),
+#
+#dex_prices as (
+#    select
+#        *
+#    from dex.prices
+#    where blockchain = 'ethereum'
+#    and contract_address = 0x68BbEd6A47194EFf1CF514B50Ea91895597fc91E
+#    order by hour desc
+#    limit 1
+#),
+#
+#cost_basis as (
+#    select
+#        tx_from as wallet_address
+#        , max(balance) as balance
+#        , sum(amount_usd) filter (where direction = 'buy') / sum(amount_token) filter (where direction = 'buy') as cost_basis
+#        , (select
+#            coalesce(d.median_price, 0) as price
+#        from tokens.erc20 p
+#        left join dex_prices d on d.contract_address = p.contract_address
+#        where p.blockchain = 'ethereum'
+#        and p.contract_address = 0x68BbEd6A47194EFf1CF514B50Ea91895597fc91E) as current_price
+#    from token_trading_volumes
+#    group by 1
+#),
+#
+#compiled as (
+#    select
+#        wallet_address
+#        , balance
+#        , case
+#            when cost_basis is null then 'No DEX buys'
+#            when (current_price / cost_basis) >= 10 then '10X or more'
+#            when (current_price / cost_basis) >= 5 then '5X to 10X'
+#            when (current_price / cost_basis) >= 2 then '2X to 5X'
+#            when (current_price / cost_basis) >= 1.5 then '+50% to 2X'
+#            when (current_price / cost_basis) >= 1 then 'flat to +50%'
+#            when (current_price / cost_basis) >= 0.7 then '-30% to flat'
+#            when (current_price / cost_basis) >= 0.5 then '-50% to -30%'
+#            when (current_price / cost_basis) >= 0.2 then '-80% to -50%'
+#            else '-80% or more'
+#        end as roi_bucket
+#    from cost_basis
+#    order by balance desc
+#    limit 6000
+#)
+#
+#select
+#    roi_bucket
+#    , count(wallet_address) as num_addresses
+#from compiled
+#group by 1
