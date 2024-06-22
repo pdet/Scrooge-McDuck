@@ -4,12 +4,10 @@
 
 require scrooge
 
-mode skip
-
 statement ok
-set eth_node_url= 'https://mainnet.infura.io/v3/{key}';
+set eth_node_url= 'https://mempool.merkle.io/rpc/eth/pk_mbs_0b647b195065b3294a5254838a33d062';
 
-# Try some sad paths
+## Try some sad paths
 statement error
 FROM read_eth(
     'bla',
@@ -78,8 +76,7 @@ FROM read_eth(
     999999999999
 )
 ----
-could not be found
-
+range is too large
 
 statement error
 FROM read_eth(
@@ -1237,4 +1234,4 @@ FROM read_eth(
     20034100
 )
 ----
-Couldn't resolve host name
+HTTP Request failed

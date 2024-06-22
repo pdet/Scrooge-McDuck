@@ -1,6 +1,5 @@
 #include "functions/scanner.hpp"
 #include "duckdb/common/helper.hpp"
-#include <curl/curl.h>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -216,57 +215,52 @@ struct CurrentState {
 };
 
 struct RCPRequest {
+
   explicit RCPRequest(const EthGetLogsRequest &bind_logs_p, idx_t request_id_p,
                       CurrentState &state_p)
       : bind_logs(bind_logs_p), request_id(request_id_p), state(state_p) {
 
-    // Let's do the RPC and parse the result
-    // Get JSON formatted string
-    string request = ToString();
+    // Convert the request to a JSON formatted string
+    std::string request = ToString();
 
-    CURL *curl;
-    CURLcode res;
-    string read_buffer;
-
-    curl_global_init(CURL_GLOBAL_DEFAULT);
-    curl = curl_easy_init();
-    if (curl) {
-
-      curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, 0L);
-
-      curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, 0L);
-      curl_easy_setopt(curl, CURLOPT_URL, bind_logs.rpc_url.c_str());
-
-      curl_easy_setopt(curl, CURLOPT_POSTFIELDS, request.c_str());
-
-      // Set headers
-      struct curl_slist *headers = nullptr;
-      headers = curl_slist_append(headers, "Content-Type: application/json");
-      curl_easy_setopt(curl, CURLOPT_HTTPHEADER, headers);
-
-      // Set callback function to handle the response
-      curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteCallback);
-      curl_easy_setopt(curl, CURLOPT_WRITEDATA, &read_buffer);
-
-      // Perform the request
-      res = curl_easy_perform(curl);
-      if (res != CURLE_OK) {
-        string error = "curl_easy_perform() failed: ";
-        error = +curl_easy_strerror(res);
-        throw std::runtime_error(error);
-      }
-      // Clean up
-      curl_easy_cleanup(curl);
-      curl_global_cleanup();
+    // Parse the URL to extract the host and the path
+    std::string url = bind_logs.rpc_url;
+    std::string host, path;
+    size_t protocol_end = url.find("://");
+    if (protocol_end != std::string::npos) {
+      url = url.substr(protocol_end + 3);
     }
+    size_t path_start = url.find('/');
+    if (path_start != std::string::npos) {
+      host = url.substr(0, path_start);
+      path = url.substr(path_start);
+    } else {
+      host = url;
+      path = "/";
+    }
+
+    // Create an HTTP client
+    duckdb_httplib_openssl::SSLClient client(host);
+
+    // Set SSL options
+    client.enable_server_certificate_verification(false);
+
+    // Perform the HTTP POST request
+    auto res = client.Post(path.c_str(), request, "application/json");
+
+    // Check if the request was successful
+    if (!res || res->status != 200) {
+      throw std::runtime_error("HTTP Request failed with status: " +
+                               std::to_string(res ? res->status : -1));
+    }
+
     // Parse the response JSON
-    json = nlohmann::json::parse(read_buffer);
+    json = nlohmann::json::parse(res->body);
     if (!json.contains("result")) {
       // This is funky, we should error
       throw std::runtime_error("JSON Error: " + json.dump());
     }
   }
-
   // Method to return the JSON request as a string
   string ToString() const {
     std::ostringstream oss;
