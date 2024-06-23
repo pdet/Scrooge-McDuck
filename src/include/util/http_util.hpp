@@ -1,8 +1,51 @@
+//===----------------------------------------------------------------------===//
+//                         Scrooge
 //
-// Created by Pedro Holanda on 23/06/2024.
+// util/http_util.hpp
 //
+//
+//===----------------------------------------------------------------------===//
 
-#ifndef HTTP_UTIL_HPP
-#define HTTP_UTIL_HPP
+#pragma once
 
-#endif //HTTP_UTIL_HPP
+namespace duckdb {
+namespace scrooge {
+
+class HTTPUtil{
+public:
+  static duckdb_httplib_openssl::Result Request(string &url, const string &request){
+    std::string host, path;
+    size_t protocol_end = url.find("://");
+    if (protocol_end != std::string::npos) {
+      url = url.substr(protocol_end + 3);
+    }
+    size_t path_start = url.find('/');
+    if (path_start != std::string::npos) {
+      host = url.substr(0, path_start);
+      path = url.substr(path_start);
+    } else {
+      host = url;
+      path = "/";
+    }
+
+    // Create an HTTP client
+    duckdb_httplib_openssl::SSLClient client(host);
+
+    // Set SSL options
+    client.enable_server_certificate_verification(false);
+
+    // Perform the HTTP POST request
+    auto res = client.Post(path.c_str(), request, "application/json");
+
+    // Check if the request was successful
+    if (!res || res->status != 200) {
+      throw std::runtime_error("HTTP Request failed with status: " +
+                               std::to_string(res ? res->status : -1));
+    }
+    return std::move(res);
+}
+};
+
+
+} // namespace scrooge
+} // namespace duckdb
