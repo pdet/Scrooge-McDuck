@@ -8,15 +8,14 @@ set(TARGET_NAME scrooge)
 # from vcpkg.json to prevent needlessly installing it..
 find_package(OpenSSL REQUIRED)
 
-find_package(CURL REQUIRED)
-
 set(EXTENSION_NAME ${TARGET_NAME}_extension)
 set(LOADABLE_EXTENSION_NAME ${TARGET_NAME}_loadable_extension)
 
 project(${TARGET_NAME})
 include_directories(src/include)
-include_directories(${CURL_INCLUDE_DIR})
 include_directories(third_party)
+include_directories(duckdb/third_party/httplib)
+include_directories(${OPENSSL_INCLUDE_DIR})
 
 set(EXTENSION_SOURCES
     src/scrooge_extension.cpp
@@ -33,10 +32,8 @@ build_static_extension(${TARGET_NAME} ${EXTENSION_SOURCES})
 build_loadable_extension(${TARGET_NAME} " " ${EXTENSION_SOURCES})
 
 # Link OpenSSL in both the static library as the loadable extension
-target_link_libraries(${EXTENSION_NAME} OpenSSL::SSL OpenSSL::Crypto
-                      ${CURL_LIBRARIES})
-target_link_libraries(${LOADABLE_EXTENSION_NAME} OpenSSL::SSL OpenSSL::Crypto
-                      ${CURL_LIBRARIES})
+target_link_libraries(${EXTENSION_NAME} OpenSSL::SSL OpenSSL::Crypto)
+target_link_libraries(${LOADABLE_EXTENSION_NAME} OpenSSL::SSL OpenSSL::Crypto)
 
 install(
   TARGETS ${EXTENSION_NAME}

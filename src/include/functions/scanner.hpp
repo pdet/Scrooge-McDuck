@@ -10,6 +10,9 @@
 
 #include "duckdb.hpp"
 
+#define CPPHTTPLIB_OPENSSL_SUPPORT
+#include "httplib.hpp"
+
 namespace duckdb {
 namespace scrooge {
 struct YahooScanner {

@@ -1,6 +1,5 @@
 #include "functions/scanner.hpp"
 #include "duckdb/common/helper.hpp"
-#include <curl/curl.h>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -136,20 +135,52 @@ struct CurrentState {
 };
 
 struct RCPRequest {
+
   explicit RCPRequest(const EthGetLogsRequest &bind_logs_p, idx_t request_id_p,
                       CurrentState &state_p)
       : bind_logs(bind_logs_p), request_id(request_id_p), state(state_p) {
 
-    // Let's do the RPC and parse the result
-    // Get JSON formatted string
-    string request = ToString();
-    json = CurlUtil::Request(bind_logs.rpc_url, request);
+    // Convert the request to a JSON formatted string
+    std::string request = ToString();
+
+    // Parse the URL to extract the host and the path
+    std::string url = bind_logs.rpc_url;
+    std::string host, path;
+    size_t protocol_end = url.find("://");
+    if (protocol_end != std::string::npos) {
+      url = url.substr(protocol_end + 3);
+    }
+    size_t path_start = url.find('/');
+    if (path_start != std::string::npos) {
+      host = url.substr(0, path_start);
+      path = url.substr(path_start);
+    } else {
+      host = url;
+      path = "/";
+    }
+
+    // Create an HTTP client
+    duckdb_httplib_openssl::SSLClient client(host);
+
+    // Set SSL options
+    client.enable_server_certificate_verification(false);
+
+    // Perform the HTTP POST request
+    auto res = client.Post(path.c_str(), request, "application/json");
+
+    // Check if the request was successful
+    if (!res || res->status != 200) {
+      throw std::runtime_error("HTTP Request failed with status: " +
+                               std::to_string(res ? res->status : -1));
+    }
+
+    // Parse the response JSON
+    json = nlohmann::json::parse(res->body);
     if (!json.contains("result")) {
       // This is funky, we should error
       throw std::runtime_error("JSON Error: " + json.dump());
     }
   }
-
   // Method to return the JSON request as a string
   string ToString() const {
     std::ostringstream oss;
