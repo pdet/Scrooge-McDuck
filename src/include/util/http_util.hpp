@@ -11,9 +11,10 @@
 namespace duckdb {
 namespace scrooge {
 
-class HTTPUtil{
+class HTTPUtil {
 public:
-  static duckdb_httplib_openssl::Result Request(string &url, const string &request){
+  static duckdb_httplib_openssl::Result Request(string &url,
+                                                const string &request) {
     std::string host, path;
     size_t protocol_end = url.find("://");
     if (protocol_end != std::string::npos) {
@@ -42,10 +43,9 @@ public:
       throw std::runtime_error("HTTP Request failed with status: " +
                                std::to_string(res ? res->status : -1));
     }
-    return std::move(res);
-}
+    return res;
+  }
 };
-
 
 } // namespace scrooge
 } // namespace duckdb

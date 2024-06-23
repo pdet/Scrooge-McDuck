@@ -23,7 +23,7 @@ const unordered_map<string, Event> event_signatures = {
      {"Transfer", {"address", "address", "uint256"}, 0}},
     {"0x8c5be1e5ebec7d5bd14f714f0f3a56d4af4fef1d7f7bb78a0c69d4cdb365d97e",
      {"Approval", {"address", "address", "uint256"}, 1}},
-    {"0x1c411e9a96aaffc4e1b98a00ef4a86ce2e058f7d78f2c83971e57f36d39188c7",
+    {"0x1c411e9a96e071241c2f21f7726b17ae89e3cab4c78be50e062b03a9fffbbad1",
      {"Sync", {"uint112", "uint112"}, 2}},
     {"0x4a39dc06d4c0dbc64b70b7bfa42387d156a1b455ad1583a19957f547256c22e5",
      {"TransferSingle",
@@ -57,7 +57,9 @@ const unordered_map<string, string> event_to_hex_signatures = {
     {"DEPOSIT",
      "0xe1fffcc4923d54a4bdb6e0a28d0b6b7b2fb29a260555b24c75f6b1e7b3bfb123"},
     {"WITHDRAWAL",
-     "0x7fcf26fc5cc6d7e6e05e1144b4b68871c514e020f1fc0d7d839bd09f61a8bc86"}};
+     "0x7fcf26fc5cc6d7e6e05e1144b4b68871c514e020f1fc0d7d839bd09f61a8bc86"},
+    {"SYNC",
+     "0x1c411e9a96e071241c2f21f7726b17ae89e3cab4c78be50e062b03a9fffbbad1"}};
 
 const unordered_map<string, uint8_t> event_to_enum = {
     {"Transfer", 0},

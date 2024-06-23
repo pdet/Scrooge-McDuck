@@ -7,7 +7,5 @@
 #include "json.hpp"
 
 namespace duckdb {
-namespace scrooge {
-
-} // namespace scrooge
+namespace scrooge {} // namespace scrooge
 } // namespace duckdb

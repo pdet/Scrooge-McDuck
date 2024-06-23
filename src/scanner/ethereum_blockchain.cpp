@@ -101,7 +101,7 @@ unique_ptr<FunctionData> EthRPC::Bind(ClientContext &context,
   return_types.emplace_back(LogicalType::INTEGER);
   names.emplace_back("block_number");
   // data: Event-specific data (e.g., amount transferred).
-  return_types.emplace_back(LogicalType::UBIGINT);
+  return_types.emplace_back(LogicalType::LIST(LogicalType::UHUGEINT));
   names.emplace_back("data");
   // logIndex: Log's position within the block.
   return_types.emplace_back(LogicalType::UINTEGER);
@@ -145,7 +145,7 @@ struct RCPRequest {
     std::string url = bind_logs.rpc_url;
 
     // Perform the HTTP POST request
-    auto res = HTTPUtil::Request(url,request);
+    auto res = HTTPUtil::Request(url, request);
 
     // Parse the response JSON
     json = nlohmann::json::parse(res->body);
@@ -290,7 +290,6 @@ void EthRPC::Scan(ClientContext &context, TableFunctionInput &data_p,
 
   auto block_hash = (string_t *)output.data[2].GetData();
   auto block_number = (uint32_t *)output.data[3].GetData();
-  auto data = (uint64_t *)output.data[4].GetData();
   auto log_index = (uint32_t *)output.data[5].GetData();
   auto removed = (bool *)output.data[6].GetData();
 
@@ -323,7 +322,23 @@ void EthRPC::Scan(ClientContext &context, TableFunctionInput &data_p,
 
     // Column 4 - Data
     // Fixme: we need to convert this hex differently
-    data[row_idx] = HexConverter::HexToUBigInt(cur_result_row["data"]);
+    vector<Value> data_values;
+    if (event_type[row_idx] == 2) {
+      // Sync Event
+      std::string data = cur_result_row["data"];
+      std::string reserve0_hex = data.substr(2, 64);
+      std::string reserve1_hex = data.substr(66, 64);
+      data_values.emplace_back(
+          Value::UHUGEINT(HexConverter::HexToUhugeiInt(reserve0_hex)));
+      data_values.emplace_back(
+          Value::UHUGEINT(HexConverter::HexToUhugeiInt(reserve1_hex)));
+    } else {
+      std::string data = cur_result_row["data"];
+      std::string reserve0_hex = data.substr(2);
+      data_values.emplace_back(
+          Value::UHUGEINT(HexConverter::HexToUhugeiInt(reserve0_hex)));
+    }
+    output.SetValue(4, row_idx, Value::LIST(data_values));
 
     // Column 5 - LogIndex
     log_index[row_idx] =
@@ -337,8 +352,11 @@ void EthRPC::Scan(ClientContext &context, TableFunctionInput &data_p,
     for (idx_t i = 1; i < topics.size(); i++) {
       values.emplace_back(topics[i]);
     }
-    output.SetValue(7, row_idx, Value::LIST(values));
-
+    if (!values.empty()) {
+      output.SetValue(7, row_idx, Value::LIST(values));
+    } else {
+      output.SetValue(7, row_idx, Value::EMPTYLIST(LogicalType::VARCHAR));
+    }
     // Column 8 - TransactionHash
     transaction_hash[row_idx] = StringVector::AddString(
         output.data[8], cur_result_row["transactionHash"].dump());
