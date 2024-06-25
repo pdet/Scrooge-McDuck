@@ -8,6 +8,8 @@
 
 #pragma once
 
+#include "util/eth_tokens_map.hpp"
+
 namespace duckdb {
 namespace scrooge {
 // Event data structure
@@ -35,19 +37,6 @@ const unordered_map<string, Event> event_signatures = {
       4}},
     {"0x17307eab39c17eae00a0c514c4b17d95e15ee86d924b1cf3b9c9dc7f59e3e5a1",
      {"ApprovalForAll", {"address", "address", "bool"}, 5}}};
-
-const unordered_map<string, string> token_adresses = {
-    {"ETH", "0x0000000000000000000000000000000000000000"},  // Ether
-    {"USDT", "0xdAC17F958D2ee523a2206206994597C13D831ec7"}, // Tether USD
-    {"USDC", "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606EB48"}, // USD Coin
-    {"DAI", "0x6B175474E89094C44Da98b954EedeAC495271d0F"},  // DAI Stablecoin
-    {"BNB", "0xB8c77482e45F1F44dE1745F52C74426C631bDD52"},  // Binance Coin
-    {"UNI", "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984"},  // Uniswap
-    {"LINK", "0x514910771AF9Ca656af840dff83E8264EcF986CA"}, // Chainlink
-    {"WBTC", "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599"}, // Wrapped Bitcoin
-    {"LTC", "0x4338665CBB7B2485A8855A139b75D5e34AB0DB94"},  // Litecoin
-    {"BUSD", "0x4fabb145d64652a948d72533023f6e7a623c7c53"}, // Binance USD
-    {"ANDY", "0x68BbEd6A47194EFf1CF514B50Ea91895597fc91E"}};
 
 const unordered_map<string, string> event_to_hex_signatures = {
     {"TRANSFER",
