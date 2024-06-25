@@ -62,11 +62,11 @@ unique_ptr<FunctionData> EthRPC::Bind(ClientContext &context,
 
   if (!(address.size() >= 2 && address.substr(0, 2) == "0x")) {
     transform(address.begin(), address.end(), address.begin(), ::toupper);
-    if (token_adresses.find(address) == token_adresses.end()) {
+    if (token_addresses.find(address) == token_addresses.end()) {
       throw InvalidInputException(
           "Address must be either a hex or a valid token string");
     }
-    address = token_adresses.at(address);
+    address = token_addresses.at(address);
   }
 
   if (!(topic.size() >= 2 && topic.substr(0, 2) == "0x")) {
