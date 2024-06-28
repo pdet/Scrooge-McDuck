@@ -364,7 +364,7 @@ void EthRPC::Scan(ClientContext &context, TableFunctionInput &data_p,
             } else {
               data_values.emplace_back(Value::UHUGEINT(u_hugeint_res));
             }
-            if (!HexConverter::HexToUhugeiInt(reserve0_hex, bind_data.strict,
+            if (!HexConverter::HexToUhugeiInt(reserve1_hex, bind_data.strict,
                                               u_hugeint_res)) {
               data_values.emplace_back(Value());
             } else {
