@@ -1,0 +1,57 @@
+# name: test/sql/scrooge/test_eth_projection.test
+# description: Test ETH scan
+# group: [scrooge]
+
+require scrooge
+
+statement ok
+set eth_node_url= 'https://mempool.merkle.io/rpc/eth/pk_mbs_0b647b195065b3294a5254838a33d062';
+
+query I
+select address
+FROM read_eth(
+    '0xBb2b8038a1640196FbE3e38816F3e67Cba72D940',
+    'SYNC',
+    20154992,
+    20155831
+)
+limit 1;
+----
+"0xbb2b8038a1640196fbe3e38816f3e67cba72d940"
+
+query II
+select address, data
+FROM read_eth(
+    '0xBb2b8038a1640196FbE3e38816F3e67Cba72D940',
+    'SYNC',
+    20154992,
+    20155831
+)
+limit 1;
+----
+"0xbb2b8038a1640196fbe3e38816f3e67cba72d940"	[10565836168, 1940010911013880876521]
+
+query II
+select data, address
+FROM read_eth(
+    '0xBb2b8038a1640196FbE3e38816F3e67Cba72D940',
+    'SYNC',
+    20154992,
+    20155831
+)
+limit 1;
+----
+[10565836168, 1940010911013880876521]	"0xbb2b8038a1640196fbe3e38816f3e67cba72d940"
+
+query I
+select count(*)
+FROM read_eth(
+    '0xBb2b8038a1640196FbE3e38816F3e67Cba72D940',
+    'SYNC',
+    20154992,
+    20155831
+)
+limit 1;
+----
+13
+

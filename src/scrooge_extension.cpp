@@ -49,9 +49,11 @@ void ScroogeExtension::Load(DuckDB &db) {
        LogicalType::BIGINT},
       scrooge::EthRPC::Scan, scrooge::EthRPC::Bind, scrooge::EthRPC::InitGlobal,
       scrooge::EthRPC::InitLocal);
-
+  ethereum_rpc_scanner.table_scan_progress = scrooge::EthRPC::ProgressBar;
+  ethereum_rpc_scanner.projection_pushdown = true;
   ethereum_rpc_scanner.named_parameters["blocks_per_thread"] =
       LogicalType::BIGINT;
+  ethereum_rpc_scanner.named_parameters["strict"] = LogicalType::BOOLEAN;
 
   CreateTableFunctionInfo ethereum_rpc_scanner_info(ethereum_rpc_scanner);
   catalog.CreateTableFunction(*con.context, &ethereum_rpc_scanner_info);

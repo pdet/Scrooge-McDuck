@@ -1,0 +1,53 @@
+# name: test/sql/scrooge/test_eth_local.test
+# description: Test ETH scan over local node
+# group: [scrooge]
+
+require scrooge
+
+# We need a local node running for this test, so shouldn't run on CI
+mode skip
+
+# Sadly we can't support big integers yet
+statement error
+create table t as  FROM read_eth(
+          'USDT',
+          'Transfer',
+          20034000,
+          20045000,
+          blocks_per_thread = 1000,
+          strict = true
+      );
+----
+This number requires a uint256, that is not yet supported
+
+
+statement ok
+create table t as  FROM read_eth(
+          'USDT',
+          'Transfer',
+          20034000,
+          20045000,
+          blocks_per_thread = 1000,
+          strict = false
+      );
+
+query I
+select count(*) from t;
+----
+233791
+
+query I
+select count(*) from T where data[1] is null
+----
+130
+
+query I
+ select count(*) FROM read_eth(
+          'USDT',
+          'Transfer',
+          20034000,
+          20045000,
+          blocks_per_thread = 1000
+      );
+----
+233791

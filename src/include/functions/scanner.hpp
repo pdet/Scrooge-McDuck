@@ -47,6 +47,10 @@ struct EthRPC {
 
   static unique_ptr<GlobalTableFunctionState>
   InitGlobal(ClientContext &context, TableFunctionInitInput &input);
+
+  static double ProgressBar(ClientContext &context,
+                            const FunctionData *bind_data_p,
+                            const GlobalTableFunctionState *global_state);
 };
 } // namespace scrooge
 
