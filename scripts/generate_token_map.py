@@ -79,6 +79,15 @@ def generate_header(tokens, header_file):
             f.write(f'    {{"{symbol}", "{address}"}},  // {name}\n')
 
         f.write('};\n')
+
+        f.write('const vector<string> token_symbols = {\n')
+
+        for row in sorted_tokens:
+            symbol = row[1]
+            f.write(f'"{symbol}",\n')
+
+        f.write('};\n')
+
         f.write('} // namespace scrooge\n')
         f.write('} // namespace duckdb\n')
 

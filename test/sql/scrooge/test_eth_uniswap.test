@@ -18,6 +18,16 @@ limit 1
 ----
 "0xbb2b8038a1640196fbe3e38816f3e67cba72d940"	Sync	"0x5004f54a265f2dde80254c7d972516280cf886f3348aa5616b869a03d24bdecd"	20155765	[10551363886, 1942679877456358670324]	177	false	[]	"0xe81b2289f41c1e397ca5f9d8be4534778a92a5186aa2032500f8b6e782d02990"	34
 
+statement error
+select data[1], data[2] FROM read_eth(
+    'WBTK_WETH',
+    'SYNC',
+    20154992,
+    20155831
+)
+----
+WBT_WETH, WEBT_WETH, WBTC_WETH, BKO_WETH, BTE_WETH
+
 # WBTC and ETH pairing
 query II
 select data[1], data[2] FROM read_eth(
