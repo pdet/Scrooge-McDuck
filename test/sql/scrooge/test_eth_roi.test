@@ -1,0 +1,88 @@
+# name: test/sql/scrooge/test_eth_roi.test
+# description: Test ETH scan
+# group: [scrooge]
+
+require scrooge
+
+statement ok
+CREATE TABLE WETH_Transfers AS
+SELECT
+    block_number,
+    data[1] / 1000000000000000000 AS amount,
+    lower(topics[1]) AS from_address,
+    lower(topics[2]) AS to_address
+FROM read_eth(
+    'WETH',
+    'Transfer',
+    20157900,
+    20157900,
+    blocks_per_thread = 1000
+);
+
+
+statement ok
+CREATE TABLE WETH_Prices AS
+SELECT
+    block_number,
+    (data[2] / data[1]) * 1000000000000 AS price
+FROM read_eth(
+    'WETH_USDT',
+    'SYNC',
+    20157800,
+    20157900,
+    blocks_per_thread = 1000
+);
+
+statement ok
+CREATE TABLE WETH_Transfer_Values AS
+SELECT
+    t.block_number,
+    t.amount,
+    t.from_address,
+    t.to_address,
+    p.price,
+    t.amount * p.price AS value
+FROM WETH_Transfers t
+JOIN LATERAL (
+    SELECT price
+    FROM WETH_Prices p
+    WHERE p.block_number <= t.block_number
+    ORDER BY p.block_number DESC
+    LIMIT 1
+) p ON true;
+
+statement ok
+CREATE TABLE Address_Values AS
+SELECT
+    address,
+    SUM(value) AS net_value,
+    SUM(CASE WHEN type = 'in' THEN value ELSE 0 END) AS total_value_in,
+    SUM(CASE WHEN type = 'out' THEN value ELSE 0 END) AS total_value_out,
+    SUM(amount) AS net_amount
+FROM (
+    SELECT from_address AS address, -value AS value, 'out' AS type, -amount as amount FROM WETH_Transfer_Values
+    UNION ALL
+    SELECT to_address AS address, value AS value, 'in' AS type, amount as amount FROM WETH_Transfer_Values
+) AS combined
+GROUP BY address;
+
+query IIIIII
+SELECT
+    address,
+    net_value,
+    total_value_in,
+    total_value_out,
+    ((total_value_out - total_value_in) / total_value_in) * 100 AS ROI,
+    net_amount
+FROM Address_Values
+where  net_amount > 0
+ORDER BY ROI DESC,
+net_amount DESC
+LIMIT 5;
+----
+0x0000000000000000000000004585fe77225b41b697c938b018e2ac67ac5a20c0	2678.187462625365	2678.187462625365	0.0	-100.0	0.7823440051469984
+0x000000000000000000000000be69122631e58742b4f515699895f5311611780b	1711.6431167144606	1711.6431167144606	0.0	-100.0	0.5
+0x0000000000000000000000006ad1a683e09843c32d0092400613d6a590f3a949	1437.7802180401468	1437.7802180401468	0.0	-100.0	0.42
+0x000000000000000000000000b4e16d0168e52d35cacd2c6185b44281ec28c9dc	681.2509917271485	681.2509917271485	0.0	-100.0	0.19900497512437812
+0x000000000000000000000000da485283335174b6989d11f3686fa9d3dc16ec0b	342.3286233428921	342.3286233428921	0.0	-100.0	0.1
+
