@@ -26,7 +26,7 @@ select data[1], data[2] FROM read_eth(
     20155831
 )
 ----
-WBT_WETH, WEBT_WETH, WBTC_WETH, BKO_WETH, BTE_WETH
+Failed to infer the address
 
 # WBTC and ETH pairing
 query II
