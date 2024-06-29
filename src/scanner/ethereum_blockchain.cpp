@@ -362,7 +362,6 @@ void EthRPC::Scan(ClientContext &context, TableFunctionInput &data_p,
         break;
       case 1:
         // Column 1 - Event Type
-
         ((uint8_t *)output.data[col_idx].GetData())[row_idx] = event_type;
         break;
       case 2:
@@ -380,36 +379,61 @@ void EthRPC::Scan(ClientContext &context, TableFunctionInput &data_p,
         // Column 4 - Data
         // Fixme: we need to insert in list directly
         {
-          vector<Value> data_values;
           uhugeint_t u_hugeint_res{};
+          // Column 7 - Topics
+          auto &child_vector = ListVector::GetEntry(output.data[col_idx]);
+          auto list_content = FlatVector::GetData<uhugeint_t>(child_vector);
+          auto current_list_size =
+              ListVector::GetListSize(output.data[col_idx]);
+          auto current_list_capacity =
+              ListVector::GetListCapacity(output.data[col_idx]);
+
+          auto result_data =
+              FlatVector::GetData<list_entry_t>(output.data[col_idx]);
+          auto &list_entry = result_data[row_idx];
+          list_entry.offset = current_list_size;
+          auto &child_validity = FlatVector::Validity(child_vector);
           if (event_type == 2) {
             // Sync Event
             std::string data = cur_result_row["data"];
             std::string reserve0_hex = data.substr(2, 64);
             std::string reserve1_hex = data.substr(66, 64);
+            // Make sure we have enough room for the new entries
+            if (current_list_size + 2 >= current_list_capacity) {
+              ListVector::Reserve(output.data[col_idx],
+                                  current_list_capacity * 2);
+              list_content = FlatVector::GetData<uhugeint_t>(child_vector);
+            }
+
             if (!HexConverter::HexToUhugeiInt(reserve0_hex, bind_data.strict,
                                               u_hugeint_res)) {
-              data_values.emplace_back(Value());
+              child_validity.SetInvalid(current_list_size++);
             } else {
-              data_values.emplace_back(Value::UHUGEINT(u_hugeint_res));
+              list_content[current_list_size++] = u_hugeint_res;
             }
             if (!HexConverter::HexToUhugeiInt(reserve1_hex, bind_data.strict,
                                               u_hugeint_res)) {
-              data_values.emplace_back(Value());
+              child_validity.SetInvalid(current_list_size++);
             } else {
-              data_values.emplace_back(Value::UHUGEINT(u_hugeint_res));
+              list_content[current_list_size++] = u_hugeint_res;
             }
           } else {
+            if (current_list_size + 1 >= current_list_capacity) {
+              ListVector::Reserve(output.data[col_idx],
+                                  current_list_capacity * 2);
+              list_content = FlatVector::GetData<uhugeint_t>(child_vector);
+            }
             std::string data = cur_result_row["data"];
             std::string reserve0_hex = data.substr(2);
             if (!HexConverter::HexToUhugeiInt(reserve0_hex, bind_data.strict,
                                               u_hugeint_res)) {
-              data_values.emplace_back(Value());
+              child_validity.SetInvalid(current_list_size++);
             } else {
-              data_values.emplace_back(Value::UHUGEINT(u_hugeint_res));
+              list_content[current_list_size++] = u_hugeint_res;
             }
           }
-          output.SetValue(col_idx, row_idx, Value::LIST(data_values));
+          list_entry.length = current_list_size - list_entry.offset;
+          ListVector::SetListSize(output.data[col_idx], current_list_size);
           break;
         }
       case 5:
@@ -422,16 +446,28 @@ void EthRPC::Scan(ClientContext &context, TableFunctionInput &data_p,
         break;
       case 7: {
         // Column 7 - Topics
-        vector<Value> values;
+        auto &child_vector = ListVector::GetEntry(output.data[col_idx]);
+        auto list_content = FlatVector::GetData<string_t>(child_vector);
+        auto current_list_size = ListVector::GetListSize(output.data[col_idx]);
+        auto current_list_capacity =
+            ListVector::GetListCapacity(output.data[col_idx]);
+
+        auto result_data =
+            FlatVector::GetData<list_entry_t>(output.data[col_idx]);
+        auto &list_entry = result_data[row_idx];
+        list_entry.offset = current_list_size;
+        // Make sure we have enough room for the new entries
+        if (current_list_size + topics.size() - 1 >= current_list_capacity) {
+          ListVector::Reserve(output.data[col_idx], current_list_capacity * 2);
+          list_content = FlatVector::GetData<string_t>(child_vector);
+        }
         for (idx_t i = 1; i < topics.size(); i++) {
-          values.emplace_back(topics[i]);
+          list_content[current_list_size++] =
+              StringVector::AddString(child_vector, topics[i]);
         }
-        if (!values.empty()) {
-          output.SetValue(col_idx, row_idx, Value::LIST(values));
-        } else {
-          output.SetValue(col_idx, row_idx,
-                          Value::EMPTYLIST(LogicalType::VARCHAR));
-        }
+        list_entry.length = current_list_size - list_entry.offset;
+        ListVector::SetListSize(output.data[col_idx], current_list_size);
+
         break;
       }
       case 8:
