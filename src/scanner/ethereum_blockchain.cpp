@@ -71,8 +71,25 @@ unique_ptr<FunctionData> EthRPC::Bind(ClientContext &context,
     transform(address.begin(), address.end(), address.begin(), ::toupper);
     if (token_addresses.find(address) == token_addresses.end()) {
       if (uniswap_addresses.find(address) == uniswap_addresses.end()) {
-        throw InvalidInputException(
-            "Address must be either a hex or a valid token string");
+        vector<string> candidates;
+        if (address.size() < 8) {
+          candidates = StringUtil::TopNLevenshtein(token_symbols, address);
+        } else {
+          candidates = StringUtil::TopNLevenshtein(uniswap_symbols, address);
+        }
+        std::ostringstream error;
+        error << "Failed to infer the address \"" << address << "\"";
+        error << ". Address must be either a hex (e.g., 0x...) or a valid "
+                 "token symbol.\n";
+        error << "Suggested token symbols: \n";
+        for (idx_t candidate_idx = 0; candidate_idx < candidates.size();
+             candidate_idx++) {
+          error << candidates[candidate_idx];
+          if (candidate_idx < candidates.size() - 1) {
+            error << ", ";
+          }
+        }
+        throw InvalidInputException(error.str());
       } else {
         address = uniswap_addresses.at(address);
       }
@@ -84,8 +101,14 @@ unique_ptr<FunctionData> EthRPC::Bind(ClientContext &context,
   if (!(topic.size() >= 2 && topic.substr(0, 2) == "0x")) {
     transform(topic.begin(), topic.end(), topic.begin(), ::toupper);
     if (event_to_hex_signatures.find(topic) == event_to_hex_signatures.end()) {
-      throw InvalidInputException(
-          "Event must be either a hex or a valid token string");
+      std::ostringstream error;
+      error << "Failed to infer the topic address \"" << topic << "\"";
+      error << ". Address must be either a hex (e.g., 0x...) or a valid topic "
+               "string.\n";
+      error << "Suggested topic: "
+            << StringUtil::TopNLevenshtein(event_strings, topic, 1).back();
+
+      throw InvalidInputException(error.str());
     }
     topic = event_to_hex_signatures.at(topic);
   }

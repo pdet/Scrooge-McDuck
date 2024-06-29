@@ -10,23 +10,23 @@ set eth_node_url= 'https://mempool.merkle.io/rpc/eth/pk_mbs_0b647b195065b3294a52
 ## Try some sad paths
 statement error
 FROM read_eth(
-    'bla',
+    'USDM',
     'Transfer',
     20034078,
     20034100
 )
 ----
-Invalid Input Error: Address must be either a hex or a valid token string
+Failed to infer the address
 
 statement error
 FROM read_eth(
     'USDT',
-    'bla',
+    'Transf',
     20034078,
     20034100
 )
 ----
-Invalid Input Error: Event must be either a hex or a valid token string
+Suggested topic
 
 statement error
 FROM read_eth(

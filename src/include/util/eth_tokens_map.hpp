@@ -15,6 +15,7 @@
 namespace duckdb {
 namespace scrooge {
 const std::unordered_map<std::string, std::string> token_addresses = {
+    {"$Jenner", "0x482702745260Ffd69FC19943f70cFFE2caCd70e9"}, // Caitlyn Jenner
     {"$MNB", "0x42b91f1d05afea671a2da3c780eda2abf0a2a366"},    // Mineable
     {"$MUSIC", "0xD8c0b13B551718b808fc97eAd59499d5Ef862775"},  // Gala Music
     {"$PAAL", "0x14feE680690900BA0ccCfC76AD70Fd1b95D10e16"},   // PAAL AI
@@ -64,6 +65,7 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"ALPHA", "0xa1faa113cbe53436df28ff0aee54275c13b40975"}, // AlphaToken
     {"ALT", "0x8457CA5040ad67fdebbCC8EdCE889A335Bc0fbFB"},   // AltLayer Token
     {"AMB", "0x4dc3643dbc642b72c158e7f3d2ff232df61cb6ce"},   // Amber
+    {"AMB", "0xf4fb9bf10e489ea3edb03e094939341399587b0c"},   // AirDAO
     {"AMKT", "0xf17a3fe536f8f7847f1385ec1bc967b2ca9cae8d"},  // Alongside Crypto
                                                              // Market Index
     {"AMLT", "0xca0e7269600d353f70b14ad118a49575455c0f2f"},  // AMLT
@@ -105,8 +107,8 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"ATH", "0xbe0Ed4138121EcFC5c0E56B40517da27E6c5226B"},   // Aethir Token
     {"ATRI", "0xdacD69347dE42baBfAEcD09dC88958378780FB62"},  // AtariToken
     {"AUC", "0xc12d099be31567add4e4e4d0d45691c3f58f5663"},   // Auctus
-    {"AURA", "0xC0c293ce456fF0ED870ADd98a0828Dd4d2903DBF"},  // Aura
     {"AURA", "0xcdcfc0f66c522fd086a1b725ea3c0eeb9f9e8814"},  // Aurora DAO
+    {"AURA", "0xC0c293ce456fF0ED870ADd98a0828Dd4d2903DBF"},  // Aura
     {"AURORA", "0xaaaaaa20d9e0e2461697782ef11675f668207961"}, // Aurora
     {"AVATLY", "0x5fa3418d828e5cd3c61a66e0fc7fa4a35dadf960"}, // AVATLY
     {"AVG", "0xa41f142b6eb2b164f8164cae0716892ce02f311f"}, // Avocado DAO Token
@@ -122,17 +124,17 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"BAC", "0x3449fc1cd036255ba1eb19d65ff4ba2b8903a69a"},     // BAC
     {"BAG", "0x808688c820AB080A6Ff1019F03E5EC227D9b522B"},     // Bag
     {"BAL", "0xba100000625a3754423978a60c9317c58a424e3d"},     // Balancer
-    {"BANANA", "0x94e496474f1725f1c1824cb5bdb92d7691a4f03a"},  // Banana
-    {"BANANA", "0x38E68A37E401F7271568CecaAc63c6B1e19130B4"},  // Banana
     {"BANANA",
      "0x92DF60c51C710a1b1C20E42D85e221f3A1bFc7f2"}, // ApeSwapFinance Banana
-    {"BAND", "0xba11d00c5f74255f56a5e366f4f77f5a186d7f55"},  // BandToken
-    {"BANK", "0x24a6a37576377f63f194caa5f518a60f45b42921"},  // Float Bank
-    {"BAO", "0x374cb8c27130e2c9e04f44303f3c8351b9de61c1"},   // BaoToken
-    {"BASv2", "0x106538cc16f938776c7c180186975bca23875287"}, // BASv2
-    {"BAT", "0x0d8775f648430679a709e98d2b0cb6250d2887ef"},   // BAT
-    {"BAX", "0xf920e4F3FBEF5B3aD0A25017514B769bDc4Ac135"},   // BABB BAX
-    {"BCDN", "0x1e797Ce986C3CFF4472F7D38d5C4aba55DfEFE40"},  // BCDN
+    {"BANANA", "0x38E68A37E401F7271568CecaAc63c6B1e19130B4"}, // Banana
+    {"BANANA", "0x94e496474f1725f1c1824cb5bdb92d7691a4f03a"}, // Banana
+    {"BAND", "0xba11d00c5f74255f56a5e366f4f77f5a186d7f55"},   // BandToken
+    {"BANK", "0x24a6a37576377f63f194caa5f518a60f45b42921"},   // Float Bank
+    {"BAO", "0x374cb8c27130e2c9e04f44303f3c8351b9de61c1"},    // BaoToken
+    {"BASv2", "0x106538cc16f938776c7c180186975bca23875287"},  // BASv2
+    {"BAT", "0x0d8775f648430679a709e98d2b0cb6250d2887ef"},    // BAT
+    {"BAX", "0xf920e4F3FBEF5B3aD0A25017514B769bDc4Ac135"},    // BABB BAX
+    {"BCDN", "0x1e797Ce986C3CFF4472F7D38d5C4aba55DfEFE40"},   // BCDN
     {"BCDT",
      "0xacfa209fb73bf3dd5bbfb1101b9bc999c49062a5"}, // Blockchain Certified Data
                                                     // Token
@@ -161,21 +163,22 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"BIX", "0x009c43b42aefac590c719e971020575974122803"},     // BIXToken
     {"BLANK", "0x41a3dba3d677e573636ba691a70ff2d606c29666"},   // GoBlank Token
     {"BLES", "0xe796d6ca1ceb1b022ece5296226bf784110031cd"}, // Blind Boxes Token
-    {"BLT", "0x107c4504cd79c5d2696ea0030a8dd4e92601b82e"},  // Bloom
-    {"BLUR", "0x5283d291dbcf85356a21ba090e6db59121208b44"}, // Blur
-    {"BLZ", "0x5732046a883704404f284ce41ffadd5b007fd668"},  // Bluzelle
-    {"BMC", "0x986EE2B944c42D017F52Af21c4c69B84DBeA35d8"},  // BitMartToken
-    {"BNB", "0xB8c77482e45F1F44dE1745F52C74426C631bDD52"},  // BNB
-    {"BNT", "0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c"},  // Bancor
-    {"BNTY", "0xd2d6158683aee4cc838067727209a0aaf4359de3"}, // Bounty0x
-    {"BOA", "0x746dda2ea243400d5a63e0700f190ab79f06489e"},  // BOSAGORA
-    {"BOB", "0xDF347911910b6c9A4286bA8E2EE5ea4a39eB2134"},  // BOB Token
-    {"BOBA", "0x42bbfa2e77757c645eeaad1655e0911a7553efbc"}, // Boba Token
-    {"BOND", "0x0391D2021f89DC339F60Fff84546EA23E337750f"}, // BarnBridge
-                                                            // Governance Token
-    {"BOO", "0x55af5865807b196bd0197e0902746f31fbccfa58"},  // SpookyToken
-    {"BORA", "0x26fb86579e371c7aedc461b2ddef0a8628c93d3b"}, // BORA
-    {"BORG", "0x64d0f55Cd8C7133a9D7102b13987235F486F2224"}, // SwissBorg Token
+    {"BLOCK", "0x8fc17671D853341D9e8B001F5Fc3C892d09CB53A"}, // BlockGames
+    {"BLT", "0x107c4504cd79c5d2696ea0030a8dd4e92601b82e"},   // Bloom
+    {"BLUR", "0x5283d291dbcf85356a21ba090e6db59121208b44"},  // Blur
+    {"BLZ", "0x5732046a883704404f284ce41ffadd5b007fd668"},   // Bluzelle
+    {"BMC", "0x986EE2B944c42D017F52Af21c4c69B84DBeA35d8"},   // BitMartToken
+    {"BNB", "0xB8c77482e45F1F44dE1745F52C74426C631bDD52"},   // BNB
+    {"BNT", "0x1f573d6fb3f13d689ff844b4ce37794d79a7ff1c"},   // Bancor
+    {"BNTY", "0xd2d6158683aee4cc838067727209a0aaf4359de3"},  // Bounty0x
+    {"BOA", "0x746dda2ea243400d5a63e0700f190ab79f06489e"},   // BOSAGORA
+    {"BOB", "0xDF347911910b6c9A4286bA8E2EE5ea4a39eB2134"},   // BOB Token
+    {"BOBA", "0x42bbfa2e77757c645eeaad1655e0911a7553efbc"},  // Boba Token
+    {"BOND", "0x0391D2021f89DC339F60Fff84546EA23E337750f"},  // BarnBridge
+                                                             // Governance Token
+    {"BOO", "0x55af5865807b196bd0197e0902746f31fbccfa58"},   // SpookyToken
+    {"BORA", "0x26fb86579e371c7aedc461b2ddef0a8628c93d3b"},  // BORA
+    {"BORG", "0x64d0f55Cd8C7133a9D7102b13987235F486F2224"},  // SwissBorg Token
     {"BORING", "0xbc19712feb3a26080ebf6f2f7849b417fdd792ca"}, // BoringDAO
     {"BOSON", "0xc477d038d5420c6a9e0b031712f61c5120090de9"},  // Boson Token
     {"BOTTO", "0x9dfad1b7102d46b1b197b90095b5c4e9f5845bba"},  // Botto
@@ -215,8 +218,8 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"CAS", "0xe8780b48bdb05f928697a5e8155f672ed91462f7"},  // Cashaa
     {"CBY", "0xB9D27Bc093ed0A3B7c18366266704CfE5E7Af77B"},  // Carbify
     {"CCO", "0x679badc551626e01b23ceecefbc9b877ea18fc46"},  // Ccore
-    {"CDT", "0x177d39ac676ed1c67a2b268ad7f1e58826e5b0af"},  // CoinDash Token
     {"CDT", "0xcdb37a4fbc2da5b78aa4e41a432792f9533e85cc"},  // CheckDot
+    {"CDT", "0x177d39ac676ed1c67a2b268ad7f1e58826e5b0af"},  // CoinDash Token
     {"CEEK", "0xb056c38f6b7dc4064367403e26424cd2c60655e1"}, // CEEK
     {"CEL", "0xaaaebe6fe48e54f431b0c390cfaf0b017d09d42d"},  // Celsius
     {"CELL", "0x26c8afbbfe1ebaca03c2bb082e69d0476bffe099"}, // Cellframe Token
@@ -241,9 +244,11 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"CMOS", "0x87869a9789291a6cec99f3c3ef2ff71fceb12a8e"},  // CoinMerge OS
     {"CND", "0xd4c435f5b09f855c3317c8524cb1f586e42795fa"},   // Cindicator
     {"CNHT", "0x6e109e9dd7fa1a58bc3eff667e8e41fc3cc07aef"},  // Tether CNH
+    {"COBE",
+     "0xc61edb127f58f42f47a8be8aebe83cf602a53878"}, // Castle of Blackwater
     {"COFI", "0x3136ef851592acf49ca4c825131e364170fa32b3"},  // CoinFi
-    {"COMBO", "0xffffffff2ba8f66d4e51811c5190992176930278"}, // Furucombo
     {"COMBO", "0xc03fbf20a586fa89c2a5f6f941458e1fbc40c661"}, // ComboToken
+    {"COMBO", "0xffffffff2ba8f66d4e51811c5190992176930278"}, // Furucombo
     {"COMP", "0xc00e94cb662c3520282e6f5717214004a7f26888"},  // Compound
     {"CONV", "0xc834fa996fa3bec7aad3693af486ae53d8aa8b50"},  // Convergence
     {"COOK", "0xff75ced57419bcaebe5f05254983b013b0646ef5"},  // Cook Token
@@ -260,15 +265,16 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"CRDT",
      "0xDaab5E695bb0E8Ce8384ee56BA38fA8290618e52"},        // Crypto Daily Token
     {"CRE", "0x115ec79f1de567ec68b7ae7eda501b406626478e"}, // CarryToken
-    {"CRE8", "0xc36b4311B21Fc0c2eAd46f1eA6ce97c9C4D98D3d"}, // Creaticles
-    {"CRO", "0xa0b73e1ff0b80914ab6fe0444e65848c4c34450b"},  // Cronos Coin
-    {"CRPT", "0x08389495d7456e1951ddf7c3a1314a4bfb646d8b"}, // CRPT
-    {"CRV", "0xD533a949740bb3306d119CC777fa900bA034cd52"},  // Curve DAO Token
-    {"CSIX", "0x345887cdb19e12833ed376bbf8b8b38269f5f5c8"}, // Carbon
-    {"CTI", "0xcB8fb2438A805664cD8c3e640b85AC473DA5BE87"},  // ClinTex CTI
-    {"CTSI", "0x491604c0FDF08347Dd1fa4Ee062a822A5DD06B5D"}, // Cartesi Token
-    {"CTX", "0x321c2fe4446c7c963dc41dd58879af648838f98d"},  // Cryptex
-    {"CTXC", "0xea11755ae41d889ceec39a63e6ff75a02bc1c00d"}, // Cortex Coin
+    {"CRE8", "0xc36b4311B21Fc0c2eAd46f1eA6ce97c9C4D98D3d"},  // Creaticles
+    {"CRGPT", "0x50739bd5b6afF093ba2371365727C48a420a060D"}, // CRYPTO GPT
+    {"CRO", "0xa0b73e1ff0b80914ab6fe0444e65848c4c34450b"},   // Cronos Coin
+    {"CRPT", "0x08389495d7456e1951ddf7c3a1314a4bfb646d8b"},  // CRPT
+    {"CRV", "0xD533a949740bb3306d119CC777fa900bA034cd52"},   // Curve DAO Token
+    {"CSIX", "0x345887cdb19e12833ed376bbf8b8b38269f5f5c8"},  // Carbon
+    {"CTI", "0xcB8fb2438A805664cD8c3e640b85AC473DA5BE87"},   // ClinTex CTI
+    {"CTSI", "0x491604c0FDF08347Dd1fa4Ee062a822A5DD06B5D"},  // Cartesi Token
+    {"CTX", "0x321c2fe4446c7c963dc41dd58879af648838f98d"},   // Cryptex
+    {"CTXC", "0xea11755ae41d889ceec39a63e6ff75a02bc1c00d"},  // Cortex Coin
     {"CUBE",
      "0xdf801468a808a32656d2ed2d2d80b72a129739f4"}, // Somnium Space Cubes
     {"CULT", "0xf0f9d895aca5c8678f706fb8216fa22957685a13"}, // Cult DAO
@@ -296,8 +302,8 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"DEXT", "0xfb7b4564402e5500db5bb6d63ae671302777c75a"},  // DEXTools
     {"DF", "0x431ad2ff6a9c365805ebad47ee021148d6f7dbe0"},    // dForce
     {"DFI", "0x8fc8f8269ebca376d046ce292dc7eac40c8d358a"},   // DeFiChain Token
-    {"DG", "0x53c8395465a84955c95159814461466053dedede"},    // DeGate Token
     {"DG", "0x4b520c812e8430659fc9f12f6d0c39026c83588d"},    // Decentral Games
+    {"DG", "0x53c8395465a84955c95159814461466053dedede"},    // DeGate Token
     {"DGX", "0x4f3afec4e5a3f2a6a1a411def7d7dfe50ee057bf"},   // Digix Gold Token
     {"DHT", "0xca1207647Ff814039530D7d35df0e1Dd2e91Fa84"},   // dHedge DAO Token
     {"DHV", "0x62dc4817588d53a056cbbd18231d91ffccd34b2a"},   // DeHive.finance
@@ -314,9 +320,9 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"DODO", "0x43Dfc4159D86F3A37A5A4B3D4580b888ad7d4DDd"},   // DODO bird
     {"DOGEGF", "0xfb130d93e49dca13264344966a611dc79a456bc5"}, // DogeGF
     {"DONUT", "0xc0f9bd5fa5698b6505f643900ffa515ea5df54a9"},  // Donut
-    {"DOP", "0x2a7cad775fd9c5c43f996a948660ffc21b4e628c"},    // D-Drops
     {"DOP",
      "0x6bb61215298f296c55b19ad842d3df69021da2ef"}, // Drops Ownership Power
+    {"DOP", "0x2a7cad775fd9c5c43f996a948660ffc21b4e628c"},  // D-Drops
     {"DORA", "0x70b790d0948a760e80bc3f892b142F7779b538B2"}, // Dorayaki
     {"DOS", "0x0A913beaD80F321E7Ac35285Ee10d9d922659cB7"},  // DOS Network Token
     {"DOSE", "0xb31ef9e52d94d4120eb44fe1ddfde5b4654a6515"}, // DOSE
@@ -342,6 +348,7 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"DYT", "0x740623d2c797b7D8D1EcB98e9b4Afcf99Ec31E14"},  // DoYourTip
     {"Dentacoin", "0x08d32b0da63e2C3bcF8019c9c5d849d7a9d791e6"}, // Dentacoin
     {"Dione", "0x89b69f2d1adffa9a253d40840b6baa7fc903d697"},     // Dione
+    {"EAI", "0xa84f95eb3DaBdc1bbD613709ef5F2fD42CE5bE8d"},       // EAI
     {"EARN", "0x12Ed0641242e4C6c220e3ca8F616E9d5470AC99a"},      // Earn Network
     {"ECO", "0x8dbf9a4c99580fc7fd4024ee08f3994420035727"},       // ECO
     {"ECOx", "0xcccd1ba9f7acd6117834e0d28f25645decb1736a"},      // ECOx
@@ -361,10 +368,12 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"ENJ", "0xf629cbd94d3791c9250152bd8dfbdf380e2a3b9c"},   // EnjinCoin
     {"ENS",
      "0xc18360217d8f7ab5e7c516566761ea12ce7f9d72"}, // Ethereum Name Service
+    {"ERIC", "0x16c22a91c705ec3c2d5945dbe2aca37924f1d2ed"}, // ERIC
+    {"ERN", "0xbbc2ae13b23d715c30720f079fcd9b4a74093505"},  // @EthernityChain
+                                                            // $ERN Token
     {"ERN", "0x91a69021b0baef3445e51726458a0ce601471846"}, // Ethos Reserve Note
-    {"ERN", "0xbbc2ae13b23d715c30720f079fcd9b4a74093505"}, // @EthernityChain
-                                                           // $ERN Token
     {"ESD", "0x36F3FD68E7325a35EB768F1AedaAe9EA0689d723"}, // Empty Set Dollar
+    {"ESE", "0x908ddb096bfb3acb19e2280aad858186ea4935c4"}, // eesee
     {"ESS", "0xfc05987bd2be489accf0f509e44b0145d68240f7"}, // ESSENTIA
     {"ETE", "0xd27B128dc6536309CdebF7F1AFf0cB7717Bc0268"}, // EtherEmpires
     {"ETHFI",
@@ -381,7 +390,8 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"EURS", "0xdb25f211ab05b1c97d595516f45794528a807ad8"}, // STASIS EURS Token
     {"EURT", "0xC581b735A1688071A1746c968e0798D642EDE491"}, // Euro Tether
     {"EVAI", "0x50f09629d0afdf40398a3f317cc676ca9132055c"}, // EVAI.IO
-    {"EVX", "0xf3db5fa2c66b7af3eb0c0b782510816cbe4813b8"},  // Everex
+    {"EVERY", "0x9aFa9999e45484Adf5d8EED8D9Dfe0693BACd838"}, // Everyworld
+    {"EVX", "0xf3db5fa2c66b7af3eb0c0b782510816cbe4813b8"},   // Everex
     {"EWTB",
      "0x178c820f862b14f316509ec36b13123da19a6054"}, // Energy Web Token Bridged
     {"EXD",
@@ -399,6 +409,7 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"FET", "0xaea46A60368A7bD060eec7DF8CBa43b7EF41Ad85"}, // Fetch
     {"FIN", "0x054f76beED60AB6dBEb23502178C52d6C5dEbE40"}, // DeFiner
     {"FIS", "0xef3A930e1FfFFAcd2fc13434aC81bD278B0ecC8d"}, // StaFi
+    {"FJO", "0x69457A1C9Ec492419344DA01Daf0DF0e0369d5D0"}, // Fjord Foundry
     {"FLC",
      "0x102c776DDB30C754dEd4fDcC77A19230A60D4e4f"}, // Flooring Lab Credit
     {"FLIP", "0x826180541412D574cf1336d22c0C0a287822678A"},  // Chainflip
@@ -406,6 +417,7 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"FLOKI", "0xcf0c122c6b73ff809c693db761e7baebe62b6a2e"}, // FLOKI
     {"FLOOR", "0xf59257E961883636290411c11ec5Ae622d19455e"}, // Floor
     {"FLP", "0x3a1bda28adb5b0a812a7cf10a1950c920f79bcd3"},   // FLIP
+    {"FLT", "0x236501327e701692a281934230af0b6be8df3353"},   // Fluence
     {"FLUT", "0x4f08705fb8f33affc231ed66e626b40e84a71870"},  // Flute
     {"FLUX", "0x469eDA64aEd3A3Ad6f868c44564291aA415cB1d9"},  // FLUX
     {"FNT", "0xdc5864ede28bd4405aa04d93e05a0531797d9d59"},   // Falcon
@@ -493,7 +505,6 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"HEGIC", "0x584bC13c7D411c00c01A62e8019472dE68768430"},  // Hegic
     {"HELLO", "0x411099c0b413f4feddb10edf6a8be63bd321311c"},  // Hello
     {"HERA", "0xa2c2c937333165d4c5f2dc5f31a43e1239fecfeb"},   // Hera Token
-    {"HEX", "0x2b591e99afe9f32eaa6214f7b7629768c40eeb39"},    // HEX
     {"HEZ",
      "0xEEF9f339514298C6A857EfCfC1A762aF84438dEE"}, // Hermez Network Token
     {"HFT", "0xb3999f658c0391d94a37f7ff328f3fec942bcadc"}, // Hashflow
@@ -562,14 +573,15 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"JGN", "0x73374Ea518De7adDD4c2B624C0e8B113955ee041"},   // Juggernaut DeFi
     {"JRT",
      "0x8a9c67fee641579deba04928c4bc45f66e26343a"}, // Jarvis Reward Token
-    {"K21", "0xb9d99c33ea2d86ec5ec6b8a4dd816ebba64404af"},  // k21.kanon.art
-    {"KAI", "0xD9Ec3ff1f8be459Bb9369b4E79e9Ebcf7141C093"},  // KardiaChain Token
-    {"KAN", "0x1410434b0346f5be678d0fb554e5c7ab620f8f4a"},  // KAN
-    {"KAP", "0x9625ce7753ace1fa1865a47aae2c5c2ce4418569"},  // KAP Games Token
-    {"KCS", "0xf34960d9d60be18cc1d5afc1a6f012a723a28811"},  // KuCoin Token
-    {"KEEP", "0x85eee30c52b0b379b046fb0f85f4f3dc3009afec"}, // KEEP Token
-    {"KEY", "0x4cc19356f2d37338b9802aa8e8fc58b0373296e7"},  // SelfKey
-    {"KIN", "0x818fc6c2ec5986bc6e2cbf00939d90556ab12ce5"},  // Kin
+    {"K21", "0xb9d99c33ea2d86ec5ec6b8a4dd816ebba64404af"}, // k21.kanon.art
+    {"KAI", "0xD9Ec3ff1f8be459Bb9369b4E79e9Ebcf7141C093"}, // KardiaChain Token
+    {"KAN", "0x1410434b0346f5be678d0fb554e5c7ab620f8f4a"}, // KAN
+    {"KAP", "0x9625ce7753ace1fa1865a47aae2c5c2ce4418569"}, // KAP Games Token
+    {"KARRAT", "0xacd2c239012d17beb128b0944d49015104113650"}, // KarratCoin
+    {"KCS", "0xf34960d9d60be18cc1d5afc1a6f012a723a28811"},    // KuCoin Token
+    {"KEEP", "0x85eee30c52b0b379b046fb0f85f4f3dc3009afec"},   // KEEP Token
+    {"KEY", "0x4cc19356f2d37338b9802aa8e8fc58b0373296e7"},    // SelfKey
+    {"KIN", "0x818fc6c2ec5986bc6e2cbf00939d90556ab12ce5"},    // Kin
     {"KINE",
      "0xcbfef8fdd706cde6f208460f2bf39aa9c785f05d"}, // Kine Governance Token
     {"KLEE", "0xA67E9F021B9d208F7e3365B2A155E3C55B27de71"}, // KleeKai
@@ -681,6 +693,7 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"MNW", "0xd3e4ba569045546d09cf021ecc5dfe42b1d7f6e4"},  // Morpheus.Network
     {"MOC", "0x865ec58b06bf6305b886793aa20a2da31d034e68"},  // Moss Coin
     {"MODA", "0x1117ac6ad6cdf1a3bc543bad3b133724620522d5"}, // moda
+    {"MOJO", "0xed2d13a70acbd61074fc56bd0d0845e35f793e5e"}, // Planet Mojo
     {"MOLLARS", "0x385d65ed9241e415cfc689c3e0bcf5ab2f0505c2"}, // MollarsToken
     {"MON", "0xc555d625828c4527d477e595ff1dd5801b4a600e"},     // MON
     {"MOON", "0xe1ca72ff3434b131765c62cbcbc26060f7aba03d"}, // MOONs on Ethereum
@@ -785,6 +798,7 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"PAID", "0x1614f18fc94f47967a3fbe5ffcd46d4e7da3d787"}, // PAID Network
     {"PAINT", "0x4c6ec08cf3fc987c6c4beb03184d335a2dfc4042"},  // Paint
     {"PAR", "0x68037790a0229e9ce6eaa8a99ea92964106c4703"},    // PAR Stablecoin
+    {"PARAM", "0x69A1e699f562D7Af66Fc6cc473d99f4430C3AcD2"},  // Param
     {"PAXG", "0x45804880De22913dAFE09f4980848ECE6EcbAf78"},   // Paxos Gold
     {"PAY", "0xB97048628DB6B661D4C2aA833e95Dbe1A905B280"},    // TenXPay
     {"PBR", "0x298d492e8c1d909d3f63bc4a36c66c64acb3d695"},    // PolkaBridge
@@ -798,19 +812,21 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"PERC", "0x60be1e1fe41c1370adaf5d8e66f07cf1c2df2268"},    // Perion Credits
     {"PET", "0xb870679a7fa65b924026f496de7f27c1dd0e5c5f"},     // Pet Token
     {"PHA", "0x6c5bA91642F10282b576d91922Ae6448C9d52f4E"},     // Phala
-    {"PIXEL", "0x3429d03c6F7521AeC737a0BBF2E5ddcef2C3Ae31"},   // PIXEL
-    {"PKF", "0x8b39b70e39aa811b69365398e0aace9bee238aeb"},     // PolkaFoundry
-    {"PKR", "0x001a8ffcb0f03e99141652ebcdecdb0384e3bd6c"},     // POLKER
-    {"PLA", "0x3a4f40631a4f906c2BaD353Ed06De7A5D3fCb430"},     // PlayDapp Token
-    {"PLAY", "0xe477292f1b3268687a29376116b0ed27a9c76170"},    // Herocoin
-    {"PLR", "0xe3818504c1b32bf1557b16c238b2e01fd3149c17"},     // PILLAR
-    {"PLU", "0xD8912C10681D8B21Fd3742244f44658dBA12264E"},     // Pluton
-    {"PMA", "0x846c66cf71c43f80403b51fe3906b3599d63336f"},     // PumaPay
-    {"PMON", "0x1796ae0b0fa4862485106a0de9b654efe301d0b2"},    // Polkamon
-    {"PNK", "0x93ed3fbe21207ec2e8f2d3c3de6e058cb73bc04d"},     // Pinakion
-    {"PNT", "0x89Ab32156e46F46D02ade3FEcbe5Fc4243B9AAeD"},     // pNetwork Token
-    {"POD", "0xE90CE7764d8401d19ed3733a211bd3b06c631Bc0"}, // The Other Party
-    {"POE", "0x0e0989b1f9b8a38983c2ba8053269ca62ec9b195"}, // Po.et
+    {"PIRATE",
+     "0x7613C48E0cd50E42dD9Bf0f6c235063145f6f8DC"}, // Pirate Nation Token
+    {"PIXEL", "0x3429d03c6F7521AeC737a0BBF2E5ddcef2C3Ae31"}, // PIXEL
+    {"PKF", "0x8b39b70e39aa811b69365398e0aace9bee238aeb"},   // PolkaFoundry
+    {"PKR", "0x001a8ffcb0f03e99141652ebcdecdb0384e3bd6c"},   // POLKER
+    {"PLA", "0x3a4f40631a4f906c2BaD353Ed06De7A5D3fCb430"},   // PlayDapp Token
+    {"PLAY", "0xe477292f1b3268687a29376116b0ed27a9c76170"},  // Herocoin
+    {"PLR", "0xe3818504c1b32bf1557b16c238b2e01fd3149c17"},   // PILLAR
+    {"PLU", "0xD8912C10681D8B21Fd3742244f44658dBA12264E"},   // Pluton
+    {"PMA", "0x846c66cf71c43f80403b51fe3906b3599d63336f"},   // PumaPay
+    {"PMON", "0x1796ae0b0fa4862485106a0de9b654efe301d0b2"},  // Polkamon
+    {"PNK", "0x93ed3fbe21207ec2e8f2d3c3de6e058cb73bc04d"},   // Pinakion
+    {"PNT", "0x89Ab32156e46F46D02ade3FEcbe5Fc4243B9AAeD"},   // pNetwork Token
+    {"POD", "0xE90CE7764d8401d19ed3733a211bd3b06c631Bc0"},   // The Other Party
+    {"POE", "0x0e0989b1f9b8a38983c2ba8053269ca62ec9b195"},   // Po.et
     {"POL",
      "0x455e53CBB86018Ac2B8092FdCd39d8444aFFC3F6"}, // Polygon Ecosystem Token
     {"POLY", "0x9992ec3cf6a55b00978cddf2b27bc6882d88d1ec"},   // Polymath
@@ -843,12 +859,11 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"PUSH",
      "0xf418588522d5dd018b425e472991e52ebbeeeeee"}, // Ethereum Push
                                                     // Notification Service
-    {"PYLNT", "0xd8924385cd46e6af6f377871c732bde2f8e9dd18"}, // PYLNT
     {"PYLNT", "0x7703c35cffdc5cda8d27aa3df2f9ba6964544b6e"}, // Pylon
+    {"PYLNT", "0xd8924385cd46e6af6f377871c732bde2f8e9dd18"}, // PYLNT
     {"PYR", "0x430EF9263E76DAE63c84292C3409D61c598E9682"},   // PYR Token
     {"QANX", "0xaaa9214f675316182eaa21c85f0ca99160cc3aaa"},  // QANX Token
     {"QASH", "0x618e75ac90b12c6049ba3b27f5d5f8651b0037f6"},  // QASH
-    {"QAU", "0x671abbe5ce652491985342e85428eb1b07bc6c64"},   // Quantum
     {"QKC", "0xea26c4ac16d4a5a106820bc8aee85fd0b7b2b664"},   // QuarkChain Token
     {"QKNTL", "0xbcd4D5AC29E06e4973a1dDcd782cd035d04BC0b7"}, // Quick Intel
     {"QNT", "0x4a220e6096b25eadb88358cb44068a3248254675"},   // Quant
@@ -857,15 +872,14 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"QUA", "0x4dAeb4a06F70f4b1A5C329115731fE4b89C0B227"},   // Quasacoin
     {"QUARTZ", "0xba8a621b4a54e61c442f5ec623687e2a942225ef"}, // Sandclock
     {"QUICK", "0xd2ba23de8a19316a638dc1e7a9adda1d74233368"},  // QuickSwap
-    {"QURO", "0x076a93a40bf9e0d21d3f75dd1e0584ddbe0f9d1a"},   // Qurito
     {"RACA", "0x12bb890508c125661e03b09ec06e404bc9289040"},   // Radio Caca V2
-    {"RADAR", "0xf9fbe825bfb2bf3e387af0dc18cac8d87f29dea8"},  // Radar
     {"RADAR", "0x44709a920fccf795fbc57baa433cc3dd53c44dbe"},  // DappRadar
+    {"RADAR", "0xf9fbe825bfb2bf3e387af0dc18cac8d87f29dea8"},  // Radar
     {"RAE", "0xe5a3229ccb22b6484594973a03a3851dcd948756"},    // RAE Token
     {"RAI", "0x03ab458634910aad20ef5f1c8ee96f1d6ac54919"},   // Rai Reflex Index
     {"RAIL", "0xe76C6c83af64e4C60245D8C7dE953DF673a7A33D"},  // Rail
-    {"RARE", "0xba5bde662c17e2adff1075610382b9b691296350"},  // SuperRare
     {"RARE", "0x93dfaf57d986b9ca77df9376c50878e013d9c7c8"},  // RARE.UNIQUE
+    {"RARE", "0xba5bde662c17e2adff1075610382b9b691296350"},  // SuperRare
     {"RARI", "0xfca59cd816ab1ead66534d82bc21e7515ce441cf"},  // Rarible
     {"RAZOR", "0x50de6856358cc35f3a9a57eaaa34bd4cb707d2cd"}, // RAZOR
     {"RBC", "0x3330bfb7332ca23cd071631837dc289b09c33333"},   // RUBIC TOKEN
@@ -876,9 +890,7 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"RBX", "0x3ba925fdeae6b46d0bb4d424d829982cb2f7309e"},   // RabbitX
     {"RCN", "0xf970b8e36e23f7fc3fd752eea86f8be8d83375a6"}, // RipioCreditNetwork
     {"RDN", "0x255aa6df07540cb5d3d297f0d0d4d84cb52bc8e6"}, // Raiden
-    {"RDNT", "0x137dDB47Ee24EaA998a535Ab00378d6BFa84F893"}, // Radiant
-    {"REAL",
-     "0x9214ec02cb71cba0ada6896b8da260736a67ab10"}, // Real Estate Asset Ledger
+    {"RDNT", "0x137dDB47Ee24EaA998a535Ab00378d6BFa84F893"},  // Radiant
     {"REEF", "0xfe3e6a25e6b192a42a44ecddcd13796471735acf"},  // Reef.finance
     {"REM", "0x83984d6142934bb535793a82adb0a46ef0f66b6d"},   // REMME
     {"REPv2", "0x221657776846890989a759ba2973e427dff5c9bb"}, // Reputation
@@ -896,17 +908,16 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"RING", "0x9469d013805bffb7d3debe5e7839237e535ec483"},  // Darwinia Network
                                                              // Native Token
     {"RISE", "0xC17c30e98541188614dF99239cABD40280810cA3"},  // EverRise
+    {"RIVUS", "0x60e254E35Dd712394b3AbA7A1D19114732e143dD"}, // RivusDAO
     {"RJV", "0xa1f410f13B6007fCa76833ee7eb58478D47Bc5Ef"},   // Rejuve Token
     {"RLB", "0x046eee2cc3188071c02bfc1745a6b17c656e3f3d"},   // Rollbit Coin
     {"RLC", "0x607F4C5BB672230e8672085532f7e901544a7375"},   // RLC
     {"RLY", "0xf1f955016EcbCd7321c7266BccFB96c68ea5E49b"},   // Rally
     {"RNB", "0x20a62aCA58526836165cA53fE67dd884288c8Abf"},   // Rentible
     {"RNDR", "0x6de037ef9ad2725eb40118bb1702ebb27e4aeb24"},  // Render Token
-    {"RNT", "0xff603f43946a3a28df5e6a73172555d8c8b02386"},   // OneRoot Network
     {"ROUTE", "0x16eccfdbb4ee1a85a33f3a9b21175cd7ae753db4"}, // Route
     {"RPL", "0xd33526068d116ce69f19a9ee46f0bd304f21a51f"},   // Rocket Pool
     {"RSR", "0x320623b8e4ff03373931769a31fc52a4e78b5d70"},   // Reserve Rights
-    {"RSV", "0x196f4727526eA7FB1e17b2071B3d8eAA38486988"},   // Reserve
     {"RUFF", "0xf278c1ca969095ffddded020290cf8b5c424ace2"},  // RUFF
     {"RVST", "0x120a3879da835a5af037bb2d1456bebd6b54d4ba"},  // Revest
     {"Rating", "0xe8663a64a96169ff4d95b4299e7ae9a76b905b31"}, // Rating
@@ -917,6 +928,7 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"SAFE", "0x5afe3855358e112b5647b952709e6165e1c1eeee"}, // Safe Token
     {"SAI",
      "0x89d24a6b4ccb1b6faa2625fe562bdd9a23260359"}, // Sai Stablecoin v1.0
+    {"SAI", "0x5ea49ff332b7ad99c486347c1c2bcc73d1e22b9b"},  // SyntheticAI
     {"SAIL", "0xd8f1460044925d2d5c723c7054cd9247027415b7"}, // SAIL Token
     {"SALD", "0x5582a479f0c403e207d2578963ccef5d03ba636f"}, // Salad
     {"SALT", "0x4156D3342D5c385a87D264F90653733592000581"}, // Salt
@@ -976,13 +988,11 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"SNC", "0xF4134146AF2d511Dd5EA8cDB1C4AC88C57D60404"},   // SunContract
     {"SNET", "0xff19138b039d938db46bdda0067dc4ba132ec71c"},  // Snetwork
     {"SNGLS", "0xaec2e87e0a235266d9c5adc9deb4b2e29b54d009"}, // SNGLS
-    {"SNR", "0x47d1a59cbdd19aee060c859c0009277e245328ae"},   // Sonder
     {"SNT", "0x744d70fdbe2ba4cf95131626614a1763df805b9e"},   // StatusNetwork
     {"SNX",
      "0xd0dA9cBeA9C3852C5d63A95F9ABCC4f6eA0F9032"}, // Synthetix Network Token
     {"SNX",
      "0xc011a73ee8576fb46f5e1c5751ca3b9fe0af2a6f"}, // Synthetix Network Token
-    {"SOC", "0x2d0e95bd4795d7ace0da3c0ff7b706a5970eb9d3"}, // All Sports Coin
     {"SOCKS",
      "0x23b608675a2b2fb1890d3abbd85c5775c51691d5"}, // Unisocks Edition 0
     {"SOLID", "0x777172d858dc1599914a1c4c6c9fc48c99a60990"}, // Solidly
@@ -1068,6 +1078,7 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"TLM",
      "0x888888848b652b3e3a0f34c96e00eec0f3a23f72"}, // Alien Worlds Trilium
     {"TLOS", "0x193f4A4a6ea24102F49b931DEeeb931f6E32405d"}, // TLOS
+    {"TME", "0x9C4Cf40b5B5C3a58761683E65a87902130eB1b7C"},  // Tate Stop
     {"TNT",
      "0x08f5a9235b08173b7569f83645d2c7fb55e8ccd8"}, // Tierion Network Token
     {"TOKE", "0x2e9d63788249371f1dfc918a52f8d799f4a38c94"}, // Tokemak
@@ -1174,6 +1185,7 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"VRA", "0xf411903cbc70a74d22900a5de66a2dda66507255"},    // VERA
     {"VRTX", "0xbbee07b3e8121227afcfe1e2b82772246226128e"},   // Vertex
     {"VSP", "0x1b40183efb4dd766f11bda7a7c3ad8982e998421"},    // VesperToken
+    {"VT", "0x69CadE383dF52ec02562869Da8Aa146Be08c5c3c"},     // VTrading Token
     {"VVS", "0x839e71613f9aa06e5701cf6de63e303616b0dde3"},    // VVS
     {"VXV", "0x7d29a64504629172a429e64183d6673b9dacbfce"},    // VectorspaceAI
     {"W", "0xb0ffa8000886e57f86dd5264b9582b2ad87b2b91"},      // Wormhole Token
@@ -1196,8 +1208,8 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"WLD", "0x163f8c2467924be0ae7b5347228cabf260318753"},   // Worldcoin
     {"WMC", "0x7Fd4d7737597E7b4ee22AcbF8D94362343ae0a79"},   // Wrapped MistCoin
     {"WOJAK", "0x5026F006B85729a8b14553FAE6af249aD16c9aaB"}, // Wojak Coin
-    {"WOM", "0xBd356a39BFf2cAda8E9248532DD879147221Cf76"},   // WOM Token
     {"WOM", "0xc0b314a8c08637685fc3dafc477b92028c540cfb"},   // Wombat Token
+    {"WOM", "0xBd356a39BFf2cAda8E9248532DD879147221Cf76"},   // WOM Token
     {"WOMBAT", "0x0c9c7712c83b3c70e7c5e11100d33d9401bdf9dd"}, // Wombat
     {"WOO", "0x4691937a7508860f876c9c0a2a617e7d9e945d4b"},    // WOO
     {"WOW", "0x3405a1bd46b85c5c029483fbecf2f3e611026e45"},    // WOWswap
@@ -1210,10 +1222,11 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"X8X", "0x910dfc18d6ea3d6a7124a6f8b5458f281060fa4c"},  // X8XToken
     {"XAR", "0x5027Fc44a7Ba114B8f494B1e4970900C6652FEDF"},  // Arcana Network
     {"XAUt", "0x68749665ff8d2d112fa859aa293f07a622782f38"}, // Tether Gold
-    {"XCHF", "0xb4272071ecadd69d933adcd19ca99fe80664fc08"}, // CryptoFranc
-    {"XCN", "0xa2cd3d43c775978a96bdbf12d733d5a1ed94fb18"},  // Onyxcoin
-    {"XCUR", "0xE1c7E30C42C24582888C758984f6e382096786bd"}, // Curate
-    {"XDAO", "0x71eeba415a523f5c952cc2f06361d5443545ad28"}, // XDAO
+    {"XCEPT", "0xac506C7DC601500E997caD42Ea446624ED40c743"}, // XCeption
+    {"XCHF", "0xb4272071ecadd69d933adcd19ca99fe80664fc08"},  // CryptoFranc
+    {"XCN", "0xa2cd3d43c775978a96bdbf12d733d5a1ed94fb18"},   // Onyxcoin
+    {"XCUR", "0xE1c7E30C42C24582888C758984f6e382096786bd"},  // Curate
+    {"XDAO", "0x71eeba415a523f5c952cc2f06361d5443545ad28"},  // XDAO
     {"XDEFI", "0x72b886d09c117654ab7da13a14d603001de0b777"}, // XDEFI
     {"XED", "0xee573a945b01b788b9287ce062a0cfc15be9fd86"},   // Exeedme
     {"XEN", "0x06450dEe7FD2Fb8E39061434BAbCFC05599a6Fb8"},   // XEN Crypto
@@ -1229,6 +1242,7 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"XRT", "0x7de91b204c1c737bcee6f000aaa6569cf7061cb7"},   // Robonomics
     {"XRUNE", "0x69fa0fee221ad11012bab0fdb45d444d3d2ce71c"}, // XRUNE Token
     {"XSGD", "0x70e8de73ce538da2beed35d14187f6959a8eca96"},  // XSGD
+    {"XSWAP", "0x8fe815417913a93ea99049fc0718ee1647a2a07c"}, // XSwap
     {"XTK", "0x7f3edcdd180dbe4819bd98fee8929b5cedb3adeb"},   // xToken
     {"XY", "0x77777777772cf0455fB38eE0e75f38034dFa50DE"},    // XY Token
     {"XYO", "0x55296f69f40ea6d20e478533c15a6b08b654e758"},   // XY Oracle
@@ -1243,6 +1257,7 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"YCC", "0x37e1160184f7dd29f00b78c050bf13224780b0b0"},    // Yuan Chain New
     {"YDF", "0x30dcba0405004cf124045793e1933c798af9e66a"},    // Yieldification
     {"YDR", "0x3757232b55e60da4a8793183ac030cfce4c3865d"},    // YDragon
+    {"YEL", "0x7815bda662050d84718b988735218cffd32f75ea"},    // YEL Token
     {"YFI", "0x0bc529c00C6401aEF6D220BE8C6Ea1667F6Ad93e"},    // yearn.finance
     {"YFL", "0x28cb7e841ee97947a86B06fA4090C8451f64c0be"},    // YFLink
     {"ZAP", "0x6781a0f84c7e9e846dcb84a9a5bd49333067b104"},    // ZAP TOKEN
@@ -1255,13 +1270,14 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"ZERO", "0xb0ed33f79d89541dfdcb04a8f04bc2c6be025ecc"},  // ZeroLiquid
     {"ZETA", "0xf091867ec603a6628ed83d274e835539d82e9cc8"},  // Zeta
     {"ZIL", "0x05f4a42e251f2d52b8ed15e9fedaacfcef1fad27"},   // Zilliqa
-    {"ZKB", "0xbbbbbbbb46a1da0f0c3f64522c275baa4c332636"},   // ZKBase
-    {"ZORA", "0xD8E3FB3b08eBA982F2754988d70D57eDc0055ae6"},  // Zoracles
-    {"ZRO", "0x6985884C4392D348587B19cb9eAAf157F13271cd"},   // LayerZero
-    {"ZRX", "0xe41d2489571d322189246dafa5ebde1f4699f498"},   // ZRX
-    {"ZSC", "0x7A41e0517a5ecA4FdbC7FbebA4D4c47B9fF6DC63"},   // ZeusShieldCoin
-    {"ZUN", "0x6b5204B0Be36771253Cc38e88012E02B752f0f36"},   // Zunami Token
-    {"ZYN", "0xe65ee7c03bbb3c950cfd4895c24989afa233ef01"},   // Zynecoin
+    {"ZK", "0xc71b5f631354be6853efe9c3ab6b9590f8302e81"},   // Polyhedra Network
+    {"ZKB", "0xbbbbbbbb46a1da0f0c3f64522c275baa4c332636"},  // ZKBase
+    {"ZORA", "0xD8E3FB3b08eBA982F2754988d70D57eDc0055ae6"}, // Zoracles
+    {"ZRO", "0x6985884C4392D348587B19cb9eAAf157F13271cd"},  // LayerZero
+    {"ZRX", "0xe41d2489571d322189246dafa5ebde1f4699f498"},  // ZRX
+    {"ZSC", "0x7A41e0517a5ecA4FdbC7FbebA4D4c47B9fF6DC63"},  // ZeusShieldCoin
+    {"ZUN", "0x6b5204B0Be36771253Cc38e88012E02B752f0f36"},  // Zunami Token
+    {"ZYN", "0xe65ee7c03bbb3c950cfd4895c24989afa233ef01"},  // Zynecoin
     {"ankrETH",
      "0xE95A203B1a91a908F9B9CE46459d101078c2c3cb"},           // Ankr Staked ETH
     {"anyFSN", "0x979aCA85bA37c675e78322ed5d97fa980B9Bdf00"}, // Fusion
@@ -1323,15 +1339,14 @@ const std::unordered_map<std::string, std::string> token_addresses = {
     {"send", "0x3f14920c99beb920afa163031c4e47a3e03b3e4a"},  // /send
     {"sfrxETH",
      "0xac3e018457b222d93114458476f3e3416abbe38f"}, // Staked Frax Ether
-    {"stETH", "0xae7ab96520de3a18e5e111b5eaab095312d7fe84"},   // stETH
     {"stETH", "0xdfe66b14d37c77f4e9b180ceb433d1b164f0281d"},   // stakedETH
+    {"stETH", "0xae7ab96520de3a18e5e111b5eaab095312d7fe84"},   // stETH
     {"stkAAVE", "0x4da27a545c0c5b758a6ba100e3a049001de870f5"}, // Staked Aave
     {"swETH", "0xf951E335afb289353dc249e82926178EaC7DEd78"},   // swETH
     {"tBTC", "0x18084fba666a33d37592fa2633fd49a74dd93a88"},    // tBTC v2
     {"uniETH", "0xF1376bceF0f78459C0Ed0ba5ddce976F1ddF51F4"},  // Universal ETH
     {"veORBK",
-     "0xe60de41eb1908251185fd54540b277005090c848"}, // Ordiswap OrdiBank Staking
-                                                    // token
+     "0xe60de41eb1908251185fd54540b277005090c848"}, // OrdiBank Staking token
     {"wBETH", "0xa2e3356610840701bdf5611a53974510ae27e2e1"}, // Wrapped Binance
                                                              // Beacon ETH
     {"wBRGE", "0x6602e9319f2c5ec0ba31ffcdc4301d7ef03b709e"}, // Wrapped-BRGE
@@ -1350,6 +1365,248 @@ const std::unordered_map<std::string, std::string> token_addresses = {
      "0xc5bddf9843308380375a611c18b50fb9341f502a"}, // veCRV-DAO yVault
     {"шайлушай",
      "0xff836a5821e69066c87e268bc51b849fab94240c"}, // Real Smurf Cat
+};
+const vector<string> token_symbols = {
+    "$Jenner",   "$MNB",       "$MUSIC",   "$PAAL",  "$SHARBI",
+    "$VAULT",    "00",         "0KN",      "0xBTC",  "0xMR",
+    "1INCH",     "1ONE",       "8PAY v2",  "AAG",    "ABOND",
+    "ABT",       "ABYSS",      "ACH",      "ACRIA",  "ACX",
+    "ADEL",      "ADP",        "ADS",      "ADX",    "AEG",
+    "AERGO",     "AEVO",       "AGIX",     "AGLA",   "AGLD",
+    "AGRS",      "AIAT",       "AIEPK",    "AIOZ",   "ALCX",
+    "ALD",       "ALEX",       "ALI",      "ALICE",  "ALN",
+    "ALPH",      "ALPHA",      "ALT",      "AMB",    "AMB",
+    "AMKT",      "AMLT",       "AMO",      "AMP",    "AMU",
+    "ANGLE",     "ANT",        "AOA",      "APE",    "APEX",
+    "API3",      "APPC",       "APRS",     "APY",    "APYS",
+    "AQT",       "AQTIS",      "ARB",      "ARC",    "ARCH",
+    "ARCO",      "ARCONA",     "ARKM",     "ARMOR",  "ARPA",
+    "ARV",       "ASD",        "ASIA",     "AST",    "ASTRO",
+    "ASX",       "ATA",        "ATH",      "ATRI",   "AUC",
+    "AURA",      "AURA",       "AURORA",   "AVATLY", "AVG",
+    "AVI",       "AVT",        "AWC",      "AXL",    "AXS",
+    "AllIn",     "Auction",    "BAC",      "BAG",    "BAL",
+    "BANANA",    "BANANA",     "BANANA",   "BAND",   "BANK",
+    "BAO",       "BASv2",      "BAT",      "BAX",    "BCDN",
+    "BCDT",      "BCMC",       "BCUG",     "BDP",    "BEAM",
+    "BEAN",      "BEND",       "BEPRO",    "BERRY",  "BETA",
+    "BEZOGE",    "BFC",        "BFLY",     "BGB",    "BIGTIME",
+    "BIOT",      "BIRD",       "BITROCK",  "BIX",    "BLANK",
+    "BLES",      "BLOCK",      "BLT",      "BLUR",   "BLZ",
+    "BMC",       "BNB",        "BNT",      "BNTY",   "BOA",
+    "BOB",       "BOBA",       "BOND",     "BOO",    "BORA",
+    "BORG",      "BORING",     "BOSON",    "BOTTO",  "BOX",
+    "BPRO",      "BPT",        "BRD",      "BREED",  "BRG",
+    "BRISE",     "BRKL",       "BSPT",     "BST",    "BTB",
+    "BTC2x-FLI", "BTMX",       "BTO",      "BTR",    "BTT",
+    "BTU",       "BUILD",      "BUMP",     "BUSD",   "BXX",
+    "BZR",       "BZRX",       "BZZ",      "BiFi",   "C20",
+    "C98",       "CAG",        "CAP",      "CARD",   "CAS",
+    "CBY",       "CCO",        "CDT",      "CDT",    "CEEK",
+    "CEL",       "CELL",       "CELO",     "CELR",   "CERE",
+    "CERES",     "CET",        "CFG",      "CGV",    "CHAIN",
+    "CHO",       "CHR",        "CHRP",     "CHSB",   "CHZ",
+    "CINU",      "CIV",        "CLV",      "CMOS",   "CND",
+    "CNHT",      "COBE",       "COFI",     "COMBO",  "COMBO",
+    "COMP",      "CONV",       "COOK",     "COPI",   "COS",
+    "COT",       "COTI",       "COV",      "COW",    "CPC",
+    "CQT",       "CRBN",       "CRDT",     "CRE",    "CRE8",
+    "CRGPT",     "CRO",        "CRPT",     "CRV",    "CSIX",
+    "CTI",       "CTSI",       "CTX",      "CTXC",   "CUBE",
+    "CULT",      "CVX",        "CWEB",     "CXO",    "Cake",
+    "Coval",     "DAFI",       "DAI",      "DAO",    "DATA",
+    "DAWN",      "DAX",        "DDX",      "DEC",    "DENT",
+    "DEO",       "DEP",        "DEPAY",    "DERC",   "DERI",
+    "DEUS",      "DEXE",       "DEXT",     "DF",     "DFI",
+    "DG",        "DG",         "DGX",      "DHT",    "DHV",
+    "DIA",       "DIFI",       "DIGG",     "DINO",   "DIVER",
+    "DIVI",      "DKA",        "DLT",      "DOCK",   "DODO",
+    "DOGEGF",    "DONUT",      "DOP",      "DOP",    "DORA",
+    "DOS",       "DOSE",       "DOV",      "DOWS",   "DPS",
+    "DPY",       "DRC",        "DREP",     "DRGN",   "DRT",
+    "DSLA",      "DTX",        "DUSK",     "DVF",    "DVI",
+    "DWEB",      "DXD",        "DYDX",     "DYP",    "DYT",
+    "Dentacoin", "Dione",      "EAI",      "EARN",   "ECO",
+    "ECOx",      "EDEN",       "EDG",      "EFI",    "EJS",
+    "EL",        "ELAND",      "ELEC",     "ELET",   "ELF",
+    "ELI",       "ELON",       "ENA",      "ENG",    "ENJ",
+    "ENS",       "ERIC",       "ERN",      "ERN",    "ESD",
+    "ESE",       "ESS",        "ETE",      "ETHFI",  "ETHIX",
+    "ETHO",      "ETHPAD",     "ETHx",     "EUL",    "EURA",
+    "EURC",      "EUROe",      "EURS",     "EURT",   "EVAI",
+    "EVERY",     "EVX",        "EWTB",     "EXD",    "EYE",
+    "FACTR",     "FBX",        "FCL",      "FCT",    "FDUSD",
+    "FEI",       "FET",        "FIN",      "FIS",    "FJO",
+    "FLC",       "FLIP",       "FLIXX",    "FLOKI",  "FLOOR",
+    "FLP",       "FLT",        "FLUT",     "FLUX",   "FNT",
+    "FOAM",      "FODL",       "FOLO",     "FORE",   "FORT",
+    "FORTH",     "FOUR",       "FOX",      "FPIS",   "FRAX",
+    "FREE",      "FRM",        "FRONT",    "FSN",    "FTI",
+    "FTX",       "FUEL",       "FUN",      "FUND",   "FUSE",
+    "FWT",       "FX",         "FXF",      "FXS",    "FYP",
+    "G-CRE",     "GAI",        "GAINS",    "GAME",   "GAS",
+    "GBYTE",     "GCR",        "GEAR",     "GEEQ",   "GEL",
+    "GEM",       "GEN",        "GFI",      "GGMT",   "GHO",
+    "GHOST",     "GHX",        "GLCH",     "GLM",    "GLQ",
+    "GMEE",      "GMT",        "GMT",      "GNO",    "GNX",
+    "GOB",       "GODS",       "GOG",      "GOVI",   "GRAI",
+    "GRG",       "GRT",        "GSE",      "GSWIFT", "GTC",
+    "GTH",       "GTO",        "GUILD",    "GUM",    "GUSD",
+    "GYEN",      "HAIR",       "HAKKA",    "HANDY",  "HBTC",
+    "HEGIC",     "HELLO",      "HERA",     "HEZ",    "HFT",
+    "HID",       "HIT",        "HLG",      "HMQ",    "HMX",
+    "HOGE",      "HOP",        "HOPR",     "HOSHI",  "HOT",
+    "HOTCROSS",  "HPAY",       "HSC",      "HT",     "HUB",
+    "HUNT",      "HUSD",       "HVN",      "HXRO",   "HYVE",
+    "IB",        "ICE",        "ICHI",     "ID",     "ID",
+    "IDEX",      "IDIA",       "IDO",      "IDRT",   "IDV",
+    "IF",        "IHT",        "ILV",      "IMT",    "IMX",
+    "INDEX",     "INFRA",      "INJ",      "INSP",   "INST",
+    "INSUR",     "INV",        "INXT",     "IOI",    "IOST",
+    "IOTX",      "IPOR",       "IQ",       "IQN",    "IQT",
+    "ISLA",      "ITGR",       "ITP",      "IXS",    "JBX",
+    "JESUS",     "JET",        "JGN",      "JRT",    "K21",
+    "KAI",       "KAN",        "KAP",      "KARRAT", "KCS",
+    "KEEP",      "KEY",        "KIN",      "KINE",   "KLEE",
+    "KMON",      "KNC",        "KNC",      "KNDX",   "KOI",
+    "KOMPETE",   "KP3R",       "KRL",      "KROM",   "KUB",
+    "KUMA",      "KYL",        "L2",       "LA",     "LAI",
+    "LAMB",      "LAMBDA",     "LBA",      "LCS",    "LCX",
+    "LDO",       "LEND",       "LEO",      "LEVER",  "LFG",
+    "LFI",       "LIFE",       "LILA",     "LINA",   "LINK",
+    "LINQ",      "LIT",        "LITH",     "LKR",    "LL",
+    "LMT",       "LMWR",       "LNC",      "LOC",    "LOKA",
+    "LON",       "LOOKS",      "LORDS",    "LPNT",   "LPT",
+    "LQTY",      "LRC",        "LSD",      "LSD",    "LTX",
+    "LUCHOW",    "LUN",        "LVM",      "LYM",    "M87",
+    "MAI",       "MAN",        "MANA",     "MANC",   "MARS4",
+    "MARSH",     "MASK",       "MASQ",     "MATH",   "MATTER",
+    "MAV",       "MAZZE",      "MBD",      "MCB",    "MCHC",
+    "MDA",       "MDS",        "MDT",      "MEAN",   "MELD",
+    "MEME",      "MET",        "META",     "MIND",   "MINDS",
+    "MINT",      "MIS",        "MITH",     "MITx",   "MIX",
+    "MKR",       "ML",         "MLN",      "MLT",    "MNT",
+    "MNW",       "MOC",        "MODA",     "MOJO",   "MOLLARS",
+    "MON",       "MOON",       "MOON",     "MOOV",   "MOVE",
+    "MT",        "MTA",        "MTH",      "MTL",    "MTLX",
+    "MTN",       "MTV",        "MVL",      "MX",     "MXC",
+    "Metis",     "NAOS",       "NAS",      "NATION", "NBT",
+    "NCR",       "NCT",        "NDX",      "NEAR",   "NEST",
+    "NET",       "NEURONI",    "NEVA",     "NEWS",   "NEX",
+    "NEXO",      "NEXT",       "NFT",      "NFTD",   "NFTL",
+    "NFTX",      "NFTY",       "NGC",      "NGL",    "NIOX",
+    "NKN",       "NMR",        "NOIA",     "NORD",   "NOW",
+    "NPX",       "NSTR",       "NTVRK",    "NULS",   "NUM",
+    "NVT",       "NXM",        "NXRA",     "O3",     "OAX",
+    "OBX",       "OCC",        "OCEAN",    "OCN",    "OCT",
+    "OCTO",      "ODDZ",       "ODEM",     "OETH",   "OGN",
+    "OHM",       "OKB",        "OLT",      "OM",     "OMG",
+    "OMIKAMI",   "ONDO",       "ONE",      "ONI",    "ONIT",
+    "OOKI",      "OPEN",       "OPEN",     "OPIUM",  "OPTIMUS",
+    "ORACLE",    "ORAI",       "ORAIX",    "ORBS",   "ORE",
+    "ORION",     "ORME",       "OS",       "OUSD",   "OVR",
+    "OXT",       "PAID",       "PAINT",    "PAR",    "PARAM",
+    "PAXG",      "PAY",        "PBR",      "PBX",    "PEAK",
+    "PEEL",      "PENDLE",     "PEOPLE",   "PEPE",   "PEPE2.0",
+    "PERC",      "PET",        "PHA",      "PIRATE", "PIXEL",
+    "PKF",       "PKR",        "PLA",      "PLAY",   "PLR",
+    "PLU",       "PMA",        "PMON",     "PNK",    "PNT",
+    "POD",       "POE",        "POL",      "POLY",   "POND",
+    "POOL",      "POOLZ",      "PORTAL",   "PORTX",  "POWR",
+    "PPAY",      "PPDEX",      "PPT",      "PRARE",  "PRE",
+    "PREMIA",    "PRIME",      "PRO",      "PROB",   "PROM",
+    "PROS",      "PRQ",        "PRT",      "PSP",    "PSTAKE",
+    "PSWAP",     "PTOY",       "PTT",      "PUNDIX", "PUSH",
+    "PYLNT",     "PYLNT",      "PYR",      "QANX",   "QASH",
+    "QKC",       "QKNTL",      "QNT",      "QRL",    "QTCON",
+    "QUA",       "QUARTZ",     "QUICK",    "RACA",   "RADAR",
+    "RADAR",     "RAE",        "RAI",      "RAIL",   "RARE",
+    "RARE",      "RARI",       "RAZOR",    "RBC",    "RBIF",
+    "RBIS",      "RBLX",       "RBN",      "RBX",    "RCN",
+    "RDN",       "RDNT",       "REEF",     "REM",    "REPv2",
+    "REQ",       "REV",        "REVO",     "REZ",    "RFR",
+    "RFuel",     "RGT",        "RIA",      "RIDE",   "RING",
+    "RISE",      "RIVUS",      "RJV",      "RLB",    "RLC",
+    "RLY",       "RNB",        "RNDR",     "ROUTE",  "RPL",
+    "RSR",       "RUFF",       "RVST",     "Rating", "Renzo Restaked ETH",
+    "SABAI",     "SAFE",       "SAI",      "SAI",    "SAIL",
+    "SALD",      "SALT",       "SAN",      "SAND",   "SATA",
+    "SATT",      "SAVM",       "SCOMP",    "SD",     "SDAO",
+    "SDEX",      "SDN",        "SDT",      "SEAM",   "SELF",
+    "SENATE",    "SENC",       "SENT",     "SFI",    "SFP",
+    "SG",        "SGT",        "SHA",      "SHACK",  "SHARD",
+    "SHD",       "SHEZMU",     "SHFT",     "SHI",    "SHI",
+    "SHIB",      "SHIDO",      "SHIK",     "SHOOT",  "SHOP",
+    "SHOPX",     "SHR",        "SHRAP",    "SHROOM", "SI",
+    "SIDUS",     "SIPHER",     "SIS",      "SIX",    "SKL",
+    "SKM",       "SLICE",      "SLP",      "SMI",    "SMS",
+    "SNC",       "SNET",       "SNGLS",    "SNT",    "SNX",
+    "SNX",       "SOCKS",      "SOLID",    "SOLVE",  "SOPH",
+    "SPC",       "SPELL",      "SPH",      "SPI",    "SPS",
+    "SPWN",      "SPX",        "SRM",      "SRM",    "SRN",
+    "SSNC",      "SSP",        "SSV",      "ST",     "STAK",
+    "STAKE",     "STARL",      "STARS",    "STAT",   "STC",
+    "STG",       "STIMA",      "STM",      "STMX",   "STND",
+    "STORJ",     "STOS",       "STPT",     "STRDY",  "STRONG",
+    "STX",       "SUB",        "SUKU",     "SURE",   "SUSHI",
+    "SWFTC",     "SWINGBY",    "SWISE",    "SWPR",   "SWTH",
+    "SX",        "SXP",        "SXS",      "SYLO",   "SYN",
+    "Silo",      "Skey",       "T",        "TAONU",  "TAP",
+    "TARA",      "TAROT",      "TBTC",     "TBX",    "TCT",
+    "TDX",       "TEL",        "TEN",      "TFBX",   "TGT",
+    "THALES",    "THEO",       "THETA",    "THN",    "THOR",
+    "THREE",     "TIDAL",      "TKB",      "TKN",    "TKP",
+    "TLM",       "TLOS",       "TME",      "TNT",    "TOKE",
+    "TONCOIN",   "TONE",       "TOON",     "TOP",    "TOPIA",
+    "TORN",      "TOWER",      "TPT",      "TRAC",   "TRADE",
+    "TRAXX",     "TRB",        "TRIBE",    "TRL",    "TRU",
+    "TRUF",      "TRUMP",      "TSL",      "TSUKA",  "TT",
+    "TTC",       "TUNE",       "TURBO",    "TUSD",   "TVK",
+    "TXA",       "TYPE",       "TYRANT",   "Titan",  "UBEX",
+    "UBT",       "UCASH",      "UDO",      "UDS",    "UFT",
+    "UGAS",      "UMA",        "UMB",      "UNCX",   "UNI",
+    "UNIBOT",    "UNISTAKE",   "UNIX",     "UNO",    "UOS",
+    "UPP",       "UQC",        "URQA",     "URUS",   "USDC",
+    "USDD",      "USDK",       "USDP",     "USDT",   "USDV",
+    "USDY",      "USDe",       "USH",      "USK",    "UUU",
+    "UwU",       "VAB",        "VAI",      "VANA",   "VANRY",
+    "VCG",       "VCHF",       "VCORE",    "VEC",    "VEE",
+    "VELAR",     "VEMP",       "VEN",      "VERA",   "VERSE",
+    "VES",       "VEST",       "VEUR",     "VEXT",   "VIB",
+    "VIBE",      "VIDT",       "VITA",     "VITE",   "VLX",
+    "VNXAU",     "VOICE",      "VOLT",     "VPP",    "VR",
+    "VRA",       "VRTX",       "VSP",      "VT",     "VVS",
+    "VXV",       "W",          "WAGMI",    "WALLET", "WAS",
+    "WAX",       "WBT",        "WBTC",     "WECAN",  "WETH",
+    "WEVER",     "WEVMOS",     "WEXO",     "WFIL",   "WHITE",
+    "WIC",       "WILD",       "WISE",     "WLD",    "WMC",
+    "WOJAK",     "WOM",        "WOM",      "WOMBAT", "WOO",
+    "WOW",       "WPR",        "WQT",      "WQTUM",  "WSM",
+    "WTC",       "WXT",        "X8X",      "XAR",    "XAUt",
+    "XCEPT",     "XCHF",       "XCN",      "XCUR",   "XDAO",
+    "XDEFI",     "XED",        "XEN",      "XEND",   "XFI",
+    "XIDO",      "XIO",        "XMON",     "XMX",    "XOR",
+    "XPR",       "XRP",        "XRT",      "XRUNE",  "XSGD",
+    "XSWAP",     "XTK",        "XY",       "XYO",    "XYZ",
+    "Xaurum",    "YAE",        "YAI",      "YAKU",   "YAM",
+    "YAXIS",     "YCC",        "YDF",      "YDR",    "YEL",
+    "YFI",       "YFL",        "ZAP",      "ZCN",    "ZCO",
+    "ZCX",       "ZELIX",      "ZENI",     "ZEON",   "ZERO",
+    "ZETA",      "ZIL",        "ZK",       "ZKB",    "ZORA",
+    "ZRO",       "ZRX",        "ZSC",      "ZUN",    "ZYN",
+    "ankrETH",   "anyFSN",     "cBAT",     "cDAI",   "cETH",
+    "cEUR",      "cUNI",       "cUSD",     "cUSDC",  "cV",
+    "cZRX",      "cbETH",      "crvUSD",   "eBORA",  "eETH",
+    "eQUAD",     "eRSDL",      "eXRD",     "frxETH", "gtcETH",
+    "iDYP",      "ibEUR",      "icETH",    "imgnAI", "mETH",
+    "mUSD",      "nCash",      "osETH",    "pBTC",   "pSAFEMOON",
+    "rDPX",      "rETH",       "renBTC",   "rsETH",  "sBTC",
+    "sETH",      "sETH2",      "sMEME",    "sUSD",   "sUSDe",
+    "send",      "sfrxETH",    "stETH",    "stETH",  "stkAAVE",
+    "swETH",     "tBTC",       "uniETH",   "veORBK", "wBETH",
+    "wBRGE",     "wCELO",      "wCUSD",    "wMANA",  "wNXM",
+    "wOCTA",     "weETH",      "xSPACE",   "xSUSHI", "xcBNC",
+    "xcRMRK",    "yveCRV-DAO", "шайлушай",
 };
 } // namespace scrooge
 } // namespace duckdb

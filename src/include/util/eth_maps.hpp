@@ -56,5 +56,7 @@ const unordered_map<string, uint8_t> event_to_enum = {
     {"Sync", 2},
     {"Transfer", 0},
 };
+
+const vector<string> event_strings = {"TRANSFER", "SYNC"};
 } // namespace scrooge
 } // namespace duckdb

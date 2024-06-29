@@ -20,18 +20,23 @@ def generate_cpp_header(csv_file_path, header_file_path):
 
 namespace duckdb {
 namespace scrooge {
-const std::unordered_map<std::string, std::string> uniswap_addresses = {
+const unordered_map<string, string> uniswap_addresses = {
 """
     
     for _, row in df.iterrows():
         pair = f'{{"{row["token0_symbol"]}_{row["token1_symbol"]}", "{row["pair_address"]}"}}'
         cpp_header += f"    {pair},\n"
     
-    cpp_header = cpp_header.rstrip(",\n") + "\n};\n}}"
+    cpp_header = cpp_header.rstrip(",\n") + "\n};\n\n"
+    cpp_header+= "const vector<string> uniswap_symbols = {"
+    for _, row in df.iterrows():
+        cpp_header += f'"{row["token0_symbol"]}_{row["token1_symbol"]}",\n'
+    cpp_header = cpp_header.rstrip(",\n") + "\n};"
+    cpp_header+="\n}}"
     
     with open(header_file_path, 'w') as file:
         file.write(cpp_header)
 
-csv_file_path = 'uniswap_pairs.csv'  
-header_file_path = 'eth_uniswap_map.hpp' 
+csv_file_path = '/Users/holanda/Desktop/uniswap_pairs.csv'
+header_file_path = 'src/include/util/eth_uniswap_map.hpp'
 generate_cpp_header(csv_file_path, header_file_path)
