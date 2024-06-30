@@ -244,26 +244,30 @@ struct RPCGlobalState : public GlobalTableFunctionState {
   }
 
   unique_ptr<RCPRequest> Next(bool init) {
-    lock_guard<mutex> parallel_lock(main_mutex);
-    if (state.start > bind_logs.to_block) {
-      ++finished;
-      return nullptr;
-    }
-    if (!init) {
-      ++finished;
-    }
-    auto cur_state = state;
-    // we start off one position after the end
-    state.start = state.end + 1;
-    if (bind_logs.blocks_per_thread != -1) {
-      if (bind_logs.blocks_per_thread > bind_logs.to_block - state.start) {
-        state.end = bind_logs.to_block;
-      } else {
-        state.end = state.start + bind_logs.blocks_per_thread;
+    CurrentState cur_state;
+    idx_t cur_request_id;
+    {
+      lock_guard<mutex> parallel_lock(main_mutex);
+      if (state.start > bind_logs.to_block) {
+        ++finished;
+        return nullptr;
       }
+      if (!init) {
+        ++finished;
+      }
+      cur_state = state;
+      // we start off one position after the end
+      state.start = state.end + 1;
+      if (bind_logs.blocks_per_thread != -1) {
+        if (bind_logs.blocks_per_thread > bind_logs.to_block - state.start) {
+          state.end = bind_logs.to_block;
+        } else {
+          state.end = state.start + bind_logs.blocks_per_thread;
+        }
+      }
+      cur_request_id = GetRequestId();
     }
-
-    return make_uniq<RCPRequest>(bind_logs, GetRequestId(), cur_state);
+    return make_uniq<RCPRequest>(bind_logs, cur_request_id, cur_state);
   }
 
   idx_t GetRequestId() { return request_id++; }
@@ -377,10 +381,8 @@ void EthRPC::Scan(ClientContext &context, TableFunctionInput &data_p,
         break;
       case 4:
         // Column 4 - Data
-        // Fixme: we need to insert in list directly
         {
           uhugeint_t u_hugeint_res{};
-          // Column 7 - Topics
           auto &child_vector = ListVector::GetEntry(output.data[col_idx]);
           auto list_content = FlatVector::GetData<uhugeint_t>(child_vector);
           auto current_list_size =
