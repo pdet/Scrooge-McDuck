@@ -63,7 +63,7 @@ struct YahooFunctionData : public TableFunctionData {
   int64_t increment_epoch;
 };
 
-shared_ptr<ProjectionRelation> GeneratePlan(YahooFunctionData &bind_data) {
+shared_ptr<Relation> GeneratePlan(YahooFunctionData &bind_data) {
   if (bind_data.cur_to_epoch > bind_data.to_epoch) {
     if (bind_data.cur_symbol_idx + 1 == bind_data.symbols.size()) {
       // we are done
@@ -79,6 +79,7 @@ shared_ptr<ProjectionRelation> GeneratePlan(YahooFunctionData &bind_data) {
   }
   auto from = to_string(bind_data.from_epoch);
   auto to = to_string(bind_data.cur_to_epoch);
+
   // Increment start
   bind_data.from_epoch += bind_data.increment_epoch;
   bind_data.cur_to_epoch += bind_data.increment_epoch;
@@ -86,34 +87,10 @@ shared_ptr<ProjectionRelation> GeneratePlan(YahooFunctionData &bind_data) {
   string url = "https://query1.finance.yahoo.com/v7/finance/download/" +
                bind_data.symbol + "?period1=" + from + "&period2=" + to +
                "&interval=" + bind_data.interval + "&events=history";
-  vector<ColumnDefinition> column_def;
-  column_def.emplace_back("Date", LogicalType::DATE);
-  column_def.emplace_back("Open", LogicalType::DOUBLE);
-  column_def.emplace_back("High", LogicalType::DOUBLE);
-  column_def.emplace_back("Low", LogicalType::DOUBLE);
-  column_def.emplace_back("Close", LogicalType::DOUBLE);
-  column_def.emplace_back("Adj Close", LogicalType::DOUBLE);
-  column_def.emplace_back("Volume", LogicalType::HUGEINT);
-  named_parameter_map_t options;
-  vector<string> urls{url};
-  auto csv_rel = make_shared_ptr<ReadCSVRelation>(bind_data.conn->context, urls,
-                                                  duckdb::move(options));
-  csv_rel->AddNamedParameter("HEADER", true);
-  csv_rel->AddNamedParameter("NULLSTR", "null");
-  vector<unique_ptr<ParsedExpression>> expressions;
-  auto star_exp = make_uniq<StarExpression>(csv_rel->name);
-  vector<string> aliases;
-  if (bind_data.symbols.size() > 1) {
-    auto constant_expression = make_uniq<ConstantExpression>(bind_data.symbol);
-    expressions.emplace_back(std::move(constant_expression));
-    aliases.emplace_back("symbol");
-  }
-  expressions.emplace_back(std::move(star_exp));
-  aliases.emplace_back("star");
+  string query = "SELECT '" + bind_data.symbol + "' as symbol, * " +
+                 "FROM read_csv('" + url + "');";
 
-  auto proj_rel = make_shared_ptr<ProjectionRelation>(
-      csv_rel, std::move(expressions), aliases);
-  return proj_rel;
+  return bind_data.conn->RelationFromQuery(query);
 }
 
 void ValidInterval(string &interval) {

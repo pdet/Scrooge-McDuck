@@ -18,6 +18,7 @@ namespace duckdb {
 void ScroogeExtension::Load(DuckDB &db) {
   Connection con(db);
   con.BeginTransaction();
+
   auto &catalog = Catalog::GetSystemCatalog(*con.context);
   scrooge::FirstScrooge::RegisterFunction(con, catalog);
   scrooge::LastScrooge::RegisterFunction(con, catalog);
