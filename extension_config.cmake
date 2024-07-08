@@ -6,5 +6,8 @@ duckdb_extension_load(scrooge
     LOAD_TESTS
 )
 
+# Build the httpfs extension to test with s3/http
+duckdb_extension_load(httpfs)
+
 # Any extra extensions that should be built
 # e.g.: duckdb_extension_load(json)
