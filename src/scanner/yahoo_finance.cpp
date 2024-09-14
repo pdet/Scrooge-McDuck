@@ -84,12 +84,20 @@ shared_ptr<Relation> GeneratePlan(YahooFunctionData &bind_data) {
   bind_data.from_epoch += bind_data.increment_epoch;
   bind_data.cur_to_epoch += bind_data.increment_epoch;
 
-  string url = "https://query1.finance.yahoo.com/v7/finance/download/" +
+  string url = "https://query2.finance.yahoo.com/v8/finance/chart/" +
                bind_data.symbol + "?period1=" + from + "&period2=" + to +
                "&interval=" + bind_data.interval + "&events=history";
-  string query = "SELECT '" + bind_data.symbol + "' as symbol, * " +
-                 "FROM read_csv('" + url + "');";
-
+  string query =
+      "SELECT '" + bind_data.symbol +
+      "'as symbol, list_transform(chart.result[1].timestamp, x -> "
+      "make_timestamp(x*1000000)::date) as date, "
+      "chart.result[1].indicators.quote[1].open as open, "
+      "chart.result[1].indicators.quote[1].high as high, "
+      "chart.result[1].indicators.quote[1].low as low, "
+      "chart.result[1].indicators.quote[1].close as close, "
+      "chart.result[1].indicators.adjclose[1].adjclose as adj_close, "
+      "chart.result[1].indicators.quote[1].volume as volume " +
+      "FROM read_json('" + url + "');";
   return bind_data.conn->RelationFromQuery(query);
 }
 
