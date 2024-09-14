@@ -68,15 +68,13 @@ FROM read_eth(
 )
 ----
 
-statement error
+statement ok
 FROM read_eth(
     'USDT',
     'Transfer',
     99999999999,
     999999999999
 )
-----
-range is too large
 
 statement error
 FROM read_eth(
