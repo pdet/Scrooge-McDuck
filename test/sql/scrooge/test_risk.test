@@ -1,0 +1,124 @@
+# name: test/sql/scrooge/test_risk.test
+# description: Test risk metric functions (sharpe_ratio, sortino_ratio, max_drawdown)
+# group: [scrooge]
+
+require scrooge
+
+# ── sharpe_ratio ──────────────────────────────────────────────
+
+# Known returns: [0.05, -0.02, 0.03, 0.01, -0.01], rfr = 0.01
+# mean = 0.012, stddev = 0.02561, sharpe = 0.002 / 0.02561 ≈ 0.0781
+query I
+SELECT round(sharpe_ratio(r, 0.01), 4) FROM (VALUES
+    (0.05), (-0.02), (0.03), (0.01), (-0.01)
+) AS t(r);
+----
+0.0781
+
+# Sharpe with zero risk-free rate
+query I
+SELECT round(sharpe_ratio(r, 0.0), 4) FROM (VALUES
+    (0.05), (-0.02), (0.03), (0.01), (-0.01)
+) AS t(r);
+----
+0.4685
+
+# Empty input → NULL
+query I
+SELECT sharpe_ratio(r, 0.01) FROM (VALUES (0.05)) AS t(r) WHERE 1=0;
+----
+NULL
+
+# Single value → NULL (need at least 2 for stddev)
+query I
+SELECT sharpe_ratio(r, 0.01) FROM (VALUES (0.05)) AS t(r);
+----
+NULL
+
+# ── sortino_ratio ─────────────────────────────────────────────
+
+# Same returns, rfr = 0.01
+# Downside excess: -0.02 - 0.01 = -0.03, -0.01 - 0.01 = -0.02
+# downside_dev = sqrt((0.0009 + 0.0004)/5) ≈ 0.01612
+# sortino = 0.002 / 0.01612 ≈ 0.1240
+query I
+SELECT round(sortino_ratio(r, 0.01), 4) FROM (VALUES
+    (0.05), (-0.02), (0.03), (0.01), (-0.01)
+) AS t(r);
+----
+0.124
+
+# All returns above rfr → NULL (zero downside deviation)
+query I
+SELECT sortino_ratio(r, 0.0) FROM (VALUES
+    (0.05), (0.03), (0.02), (0.04)
+) AS t(r);
+----
+NULL
+
+# Empty input → NULL
+query I
+SELECT sortino_ratio(r, 0.01) FROM (VALUES (0.05)) AS t(r) WHERE 1=0;
+----
+NULL
+
+# ── max_drawdown ──────────────────────────────────────────────
+
+# Prices: 100→120→90→110→80 (peak at 120, trough at 80)
+# Drawdown from peak 120 to 80 = (80-120)/120 = -0.3333
+query I
+SELECT round(max_drawdown(price, ts), 4) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0),
+    ('2024-01-02'::TIMESTAMPTZ, 120.0),
+    ('2024-01-03'::TIMESTAMPTZ, 90.0),
+    ('2024-01-04'::TIMESTAMPTZ, 110.0),
+    ('2024-01-05'::TIMESTAMPTZ, 80.0)
+) AS t(ts, price);
+----
+-0.3333
+
+# Monotonically increasing → 0 drawdown
+query I
+SELECT max_drawdown(price, ts) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0),
+    ('2024-01-02'::TIMESTAMPTZ, 110.0),
+    ('2024-01-03'::TIMESTAMPTZ, 120.0),
+    ('2024-01-04'::TIMESTAMPTZ, 130.0)
+) AS t(ts, price);
+----
+0.0
+
+# Single peak-trough: 100→50 = -0.5
+query I
+SELECT round(max_drawdown(price, ts), 4) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0),
+    ('2024-01-02'::TIMESTAMPTZ, 50.0)
+) AS t(ts, price);
+----
+-0.5
+
+# TIMESTAMP (non-TZ) variant
+query I
+SELECT round(max_drawdown(price, ts), 4) FROM (VALUES
+    ('2024-01-01'::TIMESTAMP, 100.0),
+    ('2024-01-02'::TIMESTAMP, 120.0),
+    ('2024-01-03'::TIMESTAMP, 60.0)
+) AS t(ts, price);
+----
+-0.5
+
+# Empty input → NULL
+query I
+SELECT max_drawdown(price, ts) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0)
+) AS t(ts, price) WHERE 1=0;
+----
+NULL
+
+# Single row → NULL (need at least 2 points)
+query I
+SELECT max_drawdown(price, ts) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0)
+) AS t(ts, price);
+----
+NULL

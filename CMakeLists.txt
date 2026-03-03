@@ -34,7 +34,9 @@ set(EXTENSION_SOURCES
     src/functions/technical/bollinger.cpp
     src/functions/technical/vwap.cpp
     # Phase 2: Returns
-    src/functions/returns/returns.cpp)
+    src/functions/returns/returns.cpp
+    # Phase 2: Risk metrics
+    src/functions/risk/risk.cpp)
 
 build_static_extension(${TARGET_NAME} ${EXTENSION_SOURCES})
 build_loadable_extension(${TARGET_NAME} " " ${EXTENSION_SOURCES})
