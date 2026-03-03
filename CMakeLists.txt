@@ -32,7 +32,9 @@ set(EXTENSION_SOURCES
     src/functions/technical/rsi.cpp
     src/functions/technical/macd.cpp
     src/functions/technical/bollinger.cpp
-    src/functions/technical/vwap.cpp)
+    src/functions/technical/vwap.cpp
+    # Phase 2: Returns
+    src/functions/returns/returns.cpp)
 
 build_static_extension(${TARGET_NAME} ${EXTENSION_SOURCES})
 build_loadable_extension(${TARGET_NAME} " " ${EXTENSION_SOURCES})

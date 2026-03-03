@@ -1,0 +1,69 @@
+# name: test/sql/scrooge/test_returns.test
+# description: Test return calculation functions
+# group: [scrooge]
+
+require scrooge
+
+# Simple return: (110 - 100) / 100 = 0.1
+query I
+SELECT round(simple_return(110.0, 100.0), 4);
+----
+0.1
+
+# Simple return negative
+query I
+SELECT round(simple_return(90.0, 100.0), 4);
+----
+-0.1
+
+# Simple return zero previous
+query I
+SELECT simple_return(100.0, 0.0);
+----
+0.0
+
+# Log return: ln(110/100) = 0.09531...
+query I
+SELECT round(log_return(110.0, 100.0), 4);
+----
+0.0953
+
+# Log return negative change
+query I
+SELECT round(log_return(90.0, 100.0), 4);
+----
+-0.1054
+
+# Log return with zero/negative
+query I
+SELECT log_return(0.0, 100.0);
+----
+0.0
+
+# Cumulative return: (150 - 100) / 100 = 0.5
+query I
+SELECT round(cumulative_return(price, ts), 4) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0),
+    ('2024-01-02'::TIMESTAMPTZ, 120.0),
+    ('2024-01-03'::TIMESTAMPTZ, 110.0),
+    ('2024-01-04'::TIMESTAMPTZ, 150.0)
+) AS t(ts, price);
+----
+0.5
+
+# Cumulative return negative
+query I
+SELECT round(cumulative_return(price, ts), 4) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0),
+    ('2024-01-02'::TIMESTAMPTZ, 80.0)
+) AS t(ts, price);
+----
+-0.2
+
+# Empty input
+query I
+SELECT cumulative_return(price, ts) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0)
+) AS t(ts, price) WHERE 1=0;
+----
+NULL

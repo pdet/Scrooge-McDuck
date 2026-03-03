@@ -4,6 +4,7 @@
 #include "functions/functions.hpp"
 #include "functions/scanner.hpp"
 #include "functions/technical.hpp"
+#include "functions/returns.hpp"
 #include "duckdb.hpp"
 #include "duckdb/function/table_function.hpp"
 #include "duckdb/main/client_context.hpp"
@@ -28,6 +29,9 @@ void ScroogeExtension::Load(DuckDB &db) {
 
   // Phase 1: Technical indicators
   scrooge::RegisterTechnicalFunctions(con, catalog);
+
+  // Phase 2: Return calculations
+  scrooge::RegisterReturnFunctions(con, catalog);
 
   // Create Yahoo Scanner Function
   TableFunction yahoo_scanner("yahoo_finance",
