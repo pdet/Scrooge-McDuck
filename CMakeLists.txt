@@ -25,7 +25,11 @@ set(EXTENSION_SOURCES
     src/scanner/yahoo_finance.cpp
     src/scanner/ethereum_blockchain.cpp
     src/functions/aliases.cpp
-    src/functions/portfolio_frontier.cpp)
+    src/functions/portfolio_frontier.cpp
+    # Phase 1: Technical indicators
+    src/functions/technical/registration.cpp
+    src/functions/technical/ema.cpp
+    src/functions/technical/rsi.cpp)
 
 build_static_extension(${TARGET_NAME} ${EXTENSION_SOURCES})
 build_loadable_extension(${TARGET_NAME} " " ${EXTENSION_SOURCES})

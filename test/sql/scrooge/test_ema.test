@@ -1,0 +1,72 @@
+# name: test/sql/scrooge/test_ema.test
+# description: Test EMA (Exponential Moving Average) function
+# group: [scrooge]
+
+require scrooge
+
+# Create test data — daily stock prices
+statement ok
+CREATE TABLE prices AS SELECT * FROM (VALUES
+    (1, '2024-01-01'::TIMESTAMPTZ, 100.0),
+    (1, '2024-01-02'::TIMESTAMPTZ, 102.0),
+    (1, '2024-01-03'::TIMESTAMPTZ, 101.0),
+    (1, '2024-01-04'::TIMESTAMPTZ, 103.0),
+    (1, '2024-01-05'::TIMESTAMPTZ, 105.0),
+    (1, '2024-01-06'::TIMESTAMPTZ, 104.0),
+    (1, '2024-01-07'::TIMESTAMPTZ, 106.0),
+    (1, '2024-01-08'::TIMESTAMPTZ, 108.0),
+    (1, '2024-01-09'::TIMESTAMPTZ, 107.0),
+    (1, '2024-01-10'::TIMESTAMPTZ, 109.0)
+) AS t(symbol_id, ts, price);
+
+# EMA with period 3 — verify it returns a value
+query I
+SELECT round(ema(price, ts, 3), 2) FROM prices;
+----
+107.75
+
+# EMA with period 5
+query I
+SELECT round(ema(price, ts, 5), 2) FROM prices;
+----
+107.19
+
+# EMA with period 1 should equal the last value
+query I
+SELECT round(ema(price, ts, 1), 2) FROM prices;
+----
+109.0
+
+# EMA per group
+statement ok
+CREATE TABLE multi_stock AS SELECT * FROM (VALUES
+    (1, '2024-01-01'::TIMESTAMPTZ, 100.0),
+    (1, '2024-01-02'::TIMESTAMPTZ, 110.0),
+    (2, '2024-01-01'::TIMESTAMPTZ, 50.0),
+    (2, '2024-01-02'::TIMESTAMPTZ, 40.0)
+) AS t(symbol_id, ts, price);
+
+query II
+SELECT symbol_id, round(ema(price, ts, 2), 2) FROM multi_stock GROUP BY symbol_id ORDER BY symbol_id;
+----
+1	106.67
+2	43.33
+
+# NULL handling — NULL values should be skipped
+statement ok
+CREATE TABLE prices_nulls AS SELECT * FROM (VALUES
+    (1, '2024-01-01'::TIMESTAMPTZ, 100.0),
+    (1, '2024-01-02'::TIMESTAMPTZ, NULL),
+    (1, '2024-01-03'::TIMESTAMPTZ, 102.0)
+) AS t(symbol_id, ts, price);
+
+query I
+SELECT round(ema(price, ts, 2), 2) FROM prices_nulls;
+----
+101.33
+
+# Empty input
+query I
+SELECT ema(price, ts, 3) FROM prices WHERE 1=0;
+----
+NULL
