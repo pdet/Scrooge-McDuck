@@ -29,7 +29,10 @@ set(EXTENSION_SOURCES
     # Phase 1: Technical indicators
     src/functions/technical/registration.cpp
     src/functions/technical/ema.cpp
-    src/functions/technical/rsi.cpp)
+    src/functions/technical/rsi.cpp
+    src/functions/technical/macd.cpp
+    src/functions/technical/bollinger.cpp
+    src/functions/technical/vwap.cpp)
 
 build_static_extension(${TARGET_NAME} ${EXTENSION_SOURCES})
 build_loadable_extension(${TARGET_NAME} " " ${EXTENSION_SOURCES})
