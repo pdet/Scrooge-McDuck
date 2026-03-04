@@ -6,6 +6,7 @@ duckdb_extension_load(scrooge
     LOAD_TESTS
 )
 
-# Build the httpfs extension (needed for Yahoo scanner HTTP requests)
-duckdb_extension_load(httpfs)
+# Build json extension for Yahoo scanner JSON parsing
 duckdb_extension_load(json)
+# Note: httpfs is needed at runtime for Yahoo scanner HTTP URLs
+# but is loaded dynamically, not compiled into the extension
