@@ -5,8 +5,13 @@
 #include "duckdb/common/vector_operations/vector_operations.hpp"
 #include "duckdb/main/connection.hpp"
 #include "duckdb/catalog/catalog.hpp"
+#define _USE_MATH_DEFINES
 #include <cmath>
 #include <functional>
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
 
 namespace duckdb {
 namespace scrooge {
