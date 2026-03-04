@@ -1,0 +1,62 @@
+# name: test/sql/scrooge/test_candlestick.test
+# description: Test candlestick pattern detection functions
+# group: [scrooge]
+
+require scrooge
+
+# Doji: open ≈ close, body < 10% of range
+query I
+SELECT is_doji(100.0, 105.0, 95.0, 100.5);
+----
+true
+
+# Not a doji (big body)
+query I
+SELECT is_doji(95.0, 105.0, 94.0, 104.0);
+----
+false
+
+# Hammer: small body at top, long lower shadow
+# open=100, high=101, low=90, close=100.5 → body=0.5, lower=10, upper=0.5
+query I
+SELECT is_hammer(100.0, 101.0, 90.0, 100.5);
+----
+true
+
+# Not a hammer (body too big relative to lower shadow)
+query I
+SELECT is_hammer(90.0, 105.0, 89.0, 100.0);
+----
+false
+
+# Shooting star: small body at bottom, long upper shadow
+# open=100, high=110, low=99.5, close=100.5 → body=0.5, upper=9.5, lower=0.5
+query I
+SELECT is_shooting_star(100.0, 110.0, 99.5, 100.5);
+----
+true
+
+# Not a shooting star
+query I
+SELECT is_shooting_star(100.0, 101.0, 90.0, 100.5);
+----
+false
+
+# Marubozu: full body, no shadows
+# open=100, high=110, low=100, close=110 → body=10, upper=0, lower=0
+query I
+SELECT is_marubozu(100.0, 110.0, 100.0, 110.0);
+----
+true
+
+# Not a marubozu (has shadows)
+query I
+SELECT is_marubozu(100.0, 115.0, 95.0, 110.0);
+----
+false
+
+# NULL handling
+query I
+SELECT is_doji(NULL, 105.0, 95.0, 100.0);
+----
+NULL

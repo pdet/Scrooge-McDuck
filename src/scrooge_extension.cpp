@@ -6,6 +6,7 @@
 #include "functions/technical.hpp"
 #include "functions/returns.hpp"
 #include "functions/risk.hpp"
+#include "functions/candlestick.hpp"
 #include "duckdb.hpp"
 #include "duckdb/function/table_function.hpp"
 #include "duckdb/main/client_context.hpp"
@@ -36,6 +37,9 @@ void ScroogeExtension::Load(DuckDB &db) {
 
   // Phase 2: Risk metrics
   scrooge::RegisterRiskFunctions(con, catalog);
+
+  // Phase 4: Candlestick patterns
+  scrooge::RegisterCandlestickFunctions(con, catalog);
 
   // Create Yahoo Scanner Function
   TableFunction yahoo_scanner("yahoo_finance",
