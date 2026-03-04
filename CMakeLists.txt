@@ -37,9 +37,9 @@ set(EXTENSION_SOURCES
     src/functions/technical/obv.cpp
     src/functions/technical/atr.cpp
     src/functions/technical/mfi.cpp
+    src/functions/technical/cmf.cpp
     src/functions/candlestick/candlestick.cpp
     src/functions/technical/stochastic.cpp
-    src/functions/technical/cmf.cpp
     # Phase 2: Returns
     src/functions/returns/returns.cpp
     # Phase 2: Risk metrics

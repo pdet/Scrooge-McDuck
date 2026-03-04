@@ -13,6 +13,7 @@ void RegisterObvFunction(Connection &conn, Catalog &catalog);
 void RegisterAtrFunction(Connection &conn, Catalog &catalog);
 void RegisterStochasticFunction(Connection &conn, Catalog &catalog);
 void RegisterMfiFunction(Connection &conn, Catalog &catalog);
+void RegisterCmfFunction(Connection &conn, Catalog &catalog);
 
 void RegisterTechnicalFunctions(Connection &conn, Catalog &catalog) {
 	RegisterEmaFunction(conn, catalog);
@@ -24,6 +25,7 @@ void RegisterTechnicalFunctions(Connection &conn, Catalog &catalog) {
 	RegisterAtrFunction(conn, catalog);
 	RegisterStochasticFunction(conn, catalog);
 	RegisterMfiFunction(conn, catalog);
+	RegisterCmfFunction(conn, catalog);
 }
 
 } // namespace scrooge

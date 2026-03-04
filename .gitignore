@@ -2,4 +2,4 @@ build
 .idea
 cmake-build-debug
 duckdb_unittest_tempdir/
-.DS_Store
+.DS_Storev1.4.4/

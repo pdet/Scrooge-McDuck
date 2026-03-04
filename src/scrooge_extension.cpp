@@ -58,15 +58,7 @@ static void LoadInternal(ExtensionLoader &loader) {
 	catalog.CreateTableFunction(*con.context, &yahoo_scanner_info);
 
 	// FRED Economic Data Scanner
-	TableFunctionSet fred_set("fred_series");
-	// 2-arg: fred_series(series_id, api_key)
-	fred_set.AddFunction(TableFunction({LogicalType::VARCHAR, LogicalType::VARCHAR},
-	                                   scrooge::FredScanner::Scan, scrooge::FredScanner::Bind));
-	// 4-arg: fred_series(series_id, api_key, start_date, end_date)
-	fred_set.AddFunction(TableFunction({LogicalType::VARCHAR, LogicalType::VARCHAR, LogicalType::ANY, LogicalType::ANY},
-	                                   scrooge::FredScanner::Scan, scrooge::FredScanner::Bind));
-	CreateTableFunctionInfo fred_scanner_info(fred_set);
-	catalog.CreateTableFunction(*con.context, &fred_scanner_info);
+	scrooge::RegisterFredScanner(con, catalog);
 
 	// Ethereum Scanner
 	TableFunction ethereum_rpc_scanner("read_eth",
