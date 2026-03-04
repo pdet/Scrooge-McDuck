@@ -143,23 +143,27 @@ static void BetaFinalize(Vector &state_vector, AggregateInputData &, Vector &res
 
 void RegisterCorrelationFunctions(Connection &conn, Catalog &catalog) {
 	// portfolio_correlation(returns_a, returns_b)
-	AggregateFunction corr_func(
+	AggregateFunctionSet corr_set("portfolio_correlation");
+	corr_set.AddFunction(AggregateFunction(
 	    "portfolio_correlation",
 	    {LogicalType::DOUBLE, LogicalType::DOUBLE},
 	    LogicalType::DOUBLE,
 	    AggregateFunction::StateSize<CorrState>,
-	    CorrInitialize, CorrUpdate, CorrCombine, CorrFinalize);
-	CreateAggregateFunctionInfo corr_info(corr_func);
+	    CorrInitialize, CorrUpdate, CorrCombine, CorrFinalize,
+	    nullptr, nullptr, nullptr));
+	CreateAggregateFunctionInfo corr_info(corr_set);
 	catalog.CreateFunction(*conn.context, corr_info);
 
 	// portfolio_beta(asset_returns, benchmark_returns)
-	AggregateFunction beta_func(
+	AggregateFunctionSet beta_set("portfolio_beta");
+	beta_set.AddFunction(AggregateFunction(
 	    "portfolio_beta",
 	    {LogicalType::DOUBLE, LogicalType::DOUBLE},
 	    LogicalType::DOUBLE,
 	    AggregateFunction::StateSize<CorrState>,
-	    CorrInitialize, CorrUpdate, CorrCombine, BetaFinalize);
-	CreateAggregateFunctionInfo beta_info(beta_func);
+	    CorrInitialize, CorrUpdate, CorrCombine, BetaFinalize,
+	    nullptr, nullptr, nullptr));
+	CreateAggregateFunctionInfo beta_info(beta_set);
 	catalog.CreateFunction(*conn.context, beta_info);
 }
 
