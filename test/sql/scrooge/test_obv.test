@@ -1,0 +1,37 @@
+# name: test/sql/scrooge/test_obv.test
+# description: Test OBV (On-Balance Volume) function
+# group: [scrooge]
+
+require scrooge
+
+# OBV: up days add volume, down days subtract volume
+# Day 1→2: 102>100, +1000 → OBV=1000
+# Day 2→3: 99<102, -1500 → OBV=-500
+# Day 3→4: 101>99, +800 → OBV=300
+query I
+SELECT obv(close, volume, ts) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0, 500.0),
+    ('2024-01-02'::TIMESTAMPTZ, 102.0, 1000.0),
+    ('2024-01-03'::TIMESTAMPTZ, 99.0, 1500.0),
+    ('2024-01-04'::TIMESTAMPTZ, 101.0, 800.0)
+) AS t(ts, close, volume);
+----
+300.0
+
+# All up — OBV = sum of volumes after first
+query I
+SELECT obv(close, volume, ts) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 10.0, 100.0),
+    ('2024-01-02'::TIMESTAMPTZ, 11.0, 200.0),
+    ('2024-01-03'::TIMESTAMPTZ, 12.0, 300.0)
+) AS t(ts, close, volume);
+----
+500.0
+
+# Empty
+query I
+SELECT obv(close, volume, ts) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 10.0, 100.0)
+) AS t(ts, close, volume) WHERE 1=0;
+----
+NULL

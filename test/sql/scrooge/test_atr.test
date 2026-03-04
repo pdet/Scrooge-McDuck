@@ -1,0 +1,35 @@
+# name: test/sql/scrooge/test_atr.test
+# description: Test ATR (Average True Range) function
+# group: [scrooge]
+
+require scrooge
+
+# ATR with simple data — True Range = max(H-L, |H-prevC|, |L-prevC|)
+query I
+SELECT round(atr(high, low, close, ts, 3), 2) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 48.70, 47.79, 48.16),
+    ('2024-01-02'::TIMESTAMPTZ, 48.72, 48.14, 48.61),
+    ('2024-01-03'::TIMESTAMPTZ, 48.90, 48.39, 48.75),
+    ('2024-01-04'::TIMESTAMPTZ, 48.87, 48.37, 48.63),
+    ('2024-01-05'::TIMESTAMPTZ, 48.82, 48.24, 48.74)
+) AS t(ts, high, low, close);
+----
+0.56
+
+# ATR returns a value (basic smoke test)
+query I
+SELECT atr(high, low, close, ts) IS NOT NULL FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 110.0, 100.0, 105.0),
+    ('2024-01-02'::TIMESTAMPTZ, 112.0, 101.0, 108.0),
+    ('2024-01-03'::TIMESTAMPTZ, 115.0, 104.0, 110.0)
+) AS t(ts, high, low, close);
+----
+true
+
+# Empty
+query I
+SELECT atr(high, low, close, ts) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 10.0, 9.0, 9.5)
+) AS t(ts, high, low, close) WHERE 1=0;
+----
+NULL
