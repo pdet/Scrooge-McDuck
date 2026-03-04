@@ -1,0 +1,76 @@
+# name: test/sql/scrooge/test_wma_pivots.test
+# description: Test WMA and Pivot Point functions
+# group: [scrooge]
+
+require scrooge
+
+# WMA: equal values → same value
+query I
+SELECT round(wma(v, ts, 3), 1) FROM (VALUES
+    (10.0, '2024-01-01'::TIMESTAMPTZ),
+    (10.0, '2024-01-02'::TIMESTAMPTZ),
+    (10.0, '2024-01-03'::TIMESTAMPTZ)
+) AS t(v, ts);
+----
+10.0
+
+# WMA: ascending values → weighted toward latest
+query I
+SELECT wma(v, ts, 3) > 2.0 FROM (VALUES
+    (1.0, '2024-01-01'::TIMESTAMPTZ),
+    (2.0, '2024-01-02'::TIMESTAMPTZ),
+    (3.0, '2024-01-03'::TIMESTAMPTZ)
+) AS t(v, ts);
+----
+true
+
+# WMA should be between min and max
+query I
+SELECT wma(v, ts, 3) BETWEEN 1.0 AND 3.0 FROM (VALUES
+    (1.0, '2024-01-01'::TIMESTAMPTZ),
+    (2.0, '2024-01-02'::TIMESTAMPTZ),
+    (3.0, '2024-01-03'::TIMESTAMPTZ)
+) AS t(v, ts);
+----
+true
+
+# Pivot Point: PP = (H + L + C) / 3
+query I
+SELECT round(pivot_point(30.0, 20.0, 25.0), 1);
+----
+25.0
+
+# R1 = 2*PP - L
+query I
+SELECT round(pivot_r1(30.0, 20.0, 25.0), 1);
+----
+30.0
+
+# S1 = 2*PP - H
+query I
+SELECT round(pivot_s1(30.0, 20.0, 25.0), 1);
+----
+20.0
+
+# R2 = PP + (H - L)
+query I
+SELECT round(pivot_r2(30.0, 20.0, 25.0), 1);
+----
+35.0
+
+# S2 = PP - (H - L)
+query I
+SELECT round(pivot_s2(30.0, 20.0, 25.0), 1);
+----
+15.0
+
+# R3 > R2 > R1 > PP > S1 > S2 > S3
+query I
+SELECT pivot_r3(30, 20, 25) > pivot_r2(30, 20, 25)
+   AND pivot_r2(30, 20, 25) > pivot_r1(30, 20, 25)
+   AND pivot_r1(30, 20, 25) > pivot_point(30, 20, 25)
+   AND pivot_point(30, 20, 25) > pivot_s1(30, 20, 25)
+   AND pivot_s1(30, 20, 25) > pivot_s2(30, 20, 25)
+   AND pivot_s2(30, 20, 25) > pivot_s3(30, 20, 25);
+----
+true
