@@ -1,6 +1,6 @@
 #include "functions/technical.hpp"
 #include "duckdb/function/function_set.hpp"
-#include "duckdb/parser/parsed_data/create_table_function_info.hpp"
+#include "duckdb/parser/parsed_data/create_aggregate_function_info.hpp"
 #include "duckdb/common/helper.hpp"
 #include "duckdb/execution/expression_executor.hpp"
 #include <algorithm>

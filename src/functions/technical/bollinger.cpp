@@ -200,13 +200,27 @@ static unique_ptr<FunctionData> BollingerBindFactory(ClientContext &context, Agg
 	return make_uniq<BollingerFunctionData>(period, num_std, band);
 }
 
-static void RegisterBollingerVariant(const string &name, BollingerFunctionData::Band band, Connection &conn,
+// Separate bind functions for each band (lambdas can't convert to function pointers when capturing)
+static unique_ptr<FunctionData> BindUpper(ClientContext &ctx, AggregateFunction &f,
+                                           vector<unique_ptr<Expression>> &args) {
+	return BollingerBindFactory(ctx, f, args, BollingerFunctionData::Band::UPPER);
+}
+static unique_ptr<FunctionData> BindLower(ClientContext &ctx, AggregateFunction &f,
+                                           vector<unique_ptr<Expression>> &args) {
+	return BollingerBindFactory(ctx, f, args, BollingerFunctionData::Band::LOWER);
+}
+static unique_ptr<FunctionData> BindMiddle(ClientContext &ctx, AggregateFunction &f,
+                                            vector<unique_ptr<Expression>> &args) {
+	return BollingerBindFactory(ctx, f, args, BollingerFunctionData::Band::MIDDLE);
+}
+static unique_ptr<FunctionData> BindWidth(ClientContext &ctx, AggregateFunction &f,
+                                           vector<unique_ptr<Expression>> &args) {
+	return BollingerBindFactory(ctx, f, args, BollingerFunctionData::Band::WIDTH);
+}
+
+static void RegisterBollingerVariant(const string &name, aggregate_bind_t bind_fn, Connection &conn,
                                       Catalog &catalog) {
 	AggregateFunctionSet func_set(name);
-
-	auto bind_fn = [band](ClientContext &ctx, AggregateFunction &func, vector<unique_ptr<Expression>> &args) {
-		return BollingerBindFactory(ctx, func, args, band);
-	};
 
 	// (price, timestamp) — defaults
 	func_set.AddFunction(AggregateFunction(name, {LogicalType::DOUBLE, LogicalType::TIMESTAMP_TZ}, LogicalType::DOUBLE,
@@ -237,10 +251,10 @@ static void RegisterBollingerVariant(const string &name, BollingerFunctionData::
 }
 
 void RegisterBollingerFunctions(Connection &conn, Catalog &catalog) {
-	RegisterBollingerVariant("bollinger_upper", BollingerFunctionData::Band::UPPER, conn, catalog);
-	RegisterBollingerVariant("bollinger_lower", BollingerFunctionData::Band::LOWER, conn, catalog);
-	RegisterBollingerVariant("bollinger_middle", BollingerFunctionData::Band::MIDDLE, conn, catalog);
-	RegisterBollingerVariant("bollinger_width", BollingerFunctionData::Band::WIDTH, conn, catalog);
+	RegisterBollingerVariant("bollinger_upper", BindUpper, conn, catalog);
+	RegisterBollingerVariant("bollinger_lower", BindLower, conn, catalog);
+	RegisterBollingerVariant("bollinger_middle", BindMiddle, conn, catalog);
+	RegisterBollingerVariant("bollinger_width", BindWidth, conn, catalog);
 }
 
 } // namespace scrooge
