@@ -163,8 +163,8 @@ AggregateFunction GetLastScroogeFunction(const LogicalType &timestamp_type,
                                               LastScroogeOperation>(
         type, timestamp_type, type);
   case LogicalTypeId::UHUGEINT:
-    return AggregateFunction::BinaryAggregate<LastScroogeState<hugeint_t>,
-                                              hugeint_t, int64_t, hugeint_t,
+    return AggregateFunction::BinaryAggregate<LastScroogeState<uhugeint_t>,
+                                              uhugeint_t, int64_t, uhugeint_t,
                                               LastScroogeOperation>(
         type, timestamp_type, type);
   default:

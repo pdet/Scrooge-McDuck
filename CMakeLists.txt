@@ -25,7 +25,25 @@ set(EXTENSION_SOURCES
     src/scanner/yahoo_finance.cpp
     src/scanner/ethereum_blockchain.cpp
     src/functions/aliases.cpp
-    src/functions/portfolio_frontier.cpp)
+    src/functions/portfolio_frontier.cpp
+    # Phase 1: Technical indicators
+    src/functions/technical/registration.cpp
+    src/functions/technical/ema.cpp
+    src/functions/technical/rsi.cpp
+    src/functions/technical/macd.cpp
+    src/functions/technical/bollinger.cpp
+    src/functions/technical/vwap.cpp
+    src/functions/technical/obv.cpp
+    src/functions/technical/atr.cpp
+    src/functions/technical/mfi.cpp
+    src/functions/candlestick/candlestick.cpp
+    src/functions/technical/stochastic.cpp
+    # Phase 2: Returns
+    src/functions/returns/returns.cpp
+    # Phase 2: Risk metrics
+    src/functions/risk/risk.cpp
+    src/functions/risk/var.cpp
+    src/functions/risk/var.cpp)
 
 build_static_extension(${TARGET_NAME} ${EXTENSION_SOURCES})
 build_loadable_extension(${TARGET_NAME} " " ${EXTENSION_SOURCES})

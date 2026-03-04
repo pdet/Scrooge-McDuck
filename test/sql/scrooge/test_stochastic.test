@@ -1,0 +1,36 @@
+# name: test/sql/scrooge/test_stochastic.test
+# description: Test Stochastic Oscillator (%K)
+# group: [scrooge]
+
+require scrooge
+
+# %K with period=3: look at last 3 bars
+# Highs: 48.70, 48.72, 48.90 → highest = 48.90
+# Lows:  47.79, 48.14, 48.39 → lowest = 47.79
+# Close of last bar: 48.75
+# %K = 100 * (48.75 - 47.79) / (48.90 - 47.79) = 100 * 0.96 / 1.11 = 86.49
+query I
+SELECT round(stochastic_k(close, high, low, ts, 3), 2) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 48.70, 47.79, 48.16),
+    ('2024-01-02'::TIMESTAMPTZ, 48.72, 48.14, 48.61),
+    ('2024-01-03'::TIMESTAMPTZ, 48.90, 48.39, 48.75)
+) AS t(ts, high, low, close);
+----
+86.49
+
+# Flat prices → 50 (midpoint)
+query I
+SELECT stochastic_k(close, high, low, ts) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0, 100.0, 100.0),
+    ('2024-01-02'::TIMESTAMPTZ, 100.0, 100.0, 100.0)
+) AS t(ts, high, low, close);
+----
+50.0
+
+# Empty → NULL
+query I
+SELECT stochastic_k(close, high, low, ts) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 10.0, 9.0, 9.5)
+) AS t(ts, high, low, close) WHERE 1=0;
+----
+NULL

@@ -1,0 +1,43 @@
+# name: test/sql/scrooge/test_macd.test
+# description: Test MACD (Moving Average Convergence Divergence) function
+# group: [scrooge]
+
+require scrooge
+
+statement ok
+CREATE TABLE prices AS SELECT * FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0),
+    ('2024-01-02'::TIMESTAMPTZ, 102.0),
+    ('2024-01-03'::TIMESTAMPTZ, 101.0),
+    ('2024-01-04'::TIMESTAMPTZ, 103.0),
+    ('2024-01-05'::TIMESTAMPTZ, 105.0),
+    ('2024-01-06'::TIMESTAMPTZ, 104.0),
+    ('2024-01-07'::TIMESTAMPTZ, 106.0),
+    ('2024-01-08'::TIMESTAMPTZ, 108.0),
+    ('2024-01-09'::TIMESTAMPTZ, 107.0),
+    ('2024-01-10'::TIMESTAMPTZ, 109.0)
+) AS t(ts, price);
+
+# MACD line with default periods (12/26) — should return a value
+query I
+SELECT round(macd_line(price, ts), 4) IS NOT NULL FROM prices;
+----
+true
+
+# MACD line with custom periods
+query I
+SELECT round(macd_line(price, ts, 3, 5), 4) IS NOT NULL FROM prices;
+----
+true
+
+# MACD line should be positive when fast EMA > slow EMA (uptrend)
+query I
+SELECT macd_line(price, ts, 3, 5) > 0 FROM prices;
+----
+true
+
+# Empty input
+query I
+SELECT macd_line(price, ts) FROM prices WHERE 1=0;
+----
+NULL

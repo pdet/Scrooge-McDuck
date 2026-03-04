@@ -1,0 +1,61 @@
+# name: test/sql/scrooge/test_candlestick.test
+# description: Test candlestick pattern recognition functions
+# group: [scrooge]
+
+require scrooge
+
+# is_doji — body < 5% of range (4-arg: open, high, low, close)
+# range=10, body=0.4 → 4% → TRUE
+query I
+SELECT is_doji(100.0, 110.0, 100.0, 100.4);
+----
+true
+
+# range=10, body=1 → 10% → FALSE
+query I
+SELECT is_doji(100.0, 110.0, 100.0, 101.0);
+----
+false
+
+# is_doji with threshold (5-arg: open, high, low, close, threshold)
+# range=10, body=0.9 → 9%, threshold=10% → TRUE
+query I
+SELECT is_doji(100.0, 110.0, 100.0, 100.9, 0.10);
+----
+true
+
+# is_hammer(open, high, low, close)
+# open=109.5, high=109.5, low=100, close=109.3
+# body=0.2, range=9.5, lower_shadow=9.3, upper_shadow=0
+query I
+SELECT is_hammer(109.5, 109.5, 100.0, 109.3);
+----
+true
+
+# Not a hammer — big body
+query I
+SELECT is_hammer(100.0, 110.0, 100.0, 108.0);
+----
+false
+
+# is_engulfing(open, high, low, close, prev_open, prev_close)
+# prev: open=102, close=100 (bearish)
+# curr: open=99, high=104, low=98, close=103 (bullish, engulfs)
+query I
+SELECT is_engulfing(99.0, 104.0, 98.0, 103.0, 102.0, 100.0);
+----
+BULLISH
+
+# Bearish engulfing
+# prev: open=100, close=102 (bullish)
+# curr: open=103, high=104, low=98, close=99 (bearish, engulfs)
+query I
+SELECT is_engulfing(103.0, 104.0, 98.0, 99.0, 100.0, 102.0);
+----
+BEARISH
+
+# Same size — technically engulfs (curr open <= prev close, curr close >= prev open)
+query I
+SELECT is_engulfing(100.0, 103.0, 99.0, 102.0, 102.0, 100.0);
+----
+BULLISH

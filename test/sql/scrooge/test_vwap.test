@@ -1,0 +1,55 @@
+# name: test/sql/scrooge/test_vwap.test
+# description: Test VWAP (Volume Weighted Average Price) function
+# group: [scrooge]
+
+require scrooge
+
+# Simple VWAP calculation
+# VWAP = (100*1000 + 102*2000 + 98*500) / (1000+2000+500) = 353000/3500 = 100.857...
+query I
+SELECT round(vwap(price, volume), 2) FROM (VALUES
+    (100.0, 1000.0),
+    (102.0, 2000.0),
+    (98.0, 500.0)
+) AS t(price, volume);
+----
+100.86
+
+# VWAP with integer volumes
+query I
+SELECT round(vwap(price, volume), 2) FROM (VALUES
+    (50.0, 100),
+    (52.0, 200),
+    (51.0, 150)
+) AS t(price, volume);
+----
+51.22
+
+# VWAP per group
+query II
+SELECT symbol, round(vwap(price, volume), 2) FROM (VALUES
+    ('AAPL', 150.0, 1000.0),
+    ('AAPL', 152.0, 2000.0),
+    ('GOOG', 100.0, 500.0),
+    ('GOOG', 98.0, 1500.0)
+) AS t(symbol, price, volume)
+GROUP BY symbol ORDER BY symbol;
+----
+AAPL	151.33
+GOOG	98.5
+
+# Equal volumes = simple average
+query I
+SELECT round(vwap(price, volume), 2) FROM (VALUES
+    (10.0, 100.0),
+    (20.0, 100.0),
+    (30.0, 100.0)
+) AS t(price, volume);
+----
+20.0
+
+# Empty input
+query I
+SELECT vwap(price, volume) FROM (VALUES (1.0, 1.0)) AS t(price, volume) WHERE 1=0;
+----
+NULL
