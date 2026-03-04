@@ -1,0 +1,52 @@
+# name: test/sql/scrooge/test_dema.test
+# description: Test DEMA and TEMA
+# group: [scrooge]
+
+require scrooge
+
+# DEMA should be between min and max of input
+query I
+SELECT dema(close, ts, 3) BETWEEN 90 AND 115 FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0),
+    ('2024-01-02'::TIMESTAMPTZ, 102.0),
+    ('2024-01-03'::TIMESTAMPTZ, 98.0),
+    ('2024-01-04'::TIMESTAMPTZ, 105.0),
+    ('2024-01-05'::TIMESTAMPTZ, 110.0)
+) AS t(ts, close);
+----
+true
+
+# TEMA should also be in range
+query I
+SELECT tema(close, ts, 3) BETWEEN 90 AND 115 FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0),
+    ('2024-01-02'::TIMESTAMPTZ, 102.0),
+    ('2024-01-03'::TIMESTAMPTZ, 98.0),
+    ('2024-01-04'::TIMESTAMPTZ, 105.0),
+    ('2024-01-05'::TIMESTAMPTZ, 110.0)
+) AS t(ts, close);
+----
+true
+
+# For uptrend, DEMA should respond faster than EMA (be higher)
+query I
+SELECT dema(close, ts, 3) >= ema(close, ts, 3) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0),
+    ('2024-01-02'::TIMESTAMPTZ, 102.0),
+    ('2024-01-03'::TIMESTAMPTZ, 104.0),
+    ('2024-01-04'::TIMESTAMPTZ, 106.0),
+    ('2024-01-05'::TIMESTAMPTZ, 108.0),
+    ('2024-01-06'::TIMESTAMPTZ, 110.0)
+) AS t(ts, close);
+----
+true
+
+# TEMA with plain TIMESTAMP
+query I
+SELECT tema(close, ts, 3) > 0 FROM (VALUES
+    ('2024-01-01'::TIMESTAMP, 100.0),
+    ('2024-01-02'::TIMESTAMP, 102.0),
+    ('2024-01-03'::TIMESTAMP, 104.0)
+) AS t(ts, close);
+----
+true

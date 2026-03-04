@@ -1,46 +1,51 @@
-# Scrooge McDuck 🦆💰
+# Scrooge McDuck
 
-**The definitive financial analysis extension for [DuckDB](https://www.duckdb.org).**
+A financial analysis extension for [DuckDB](https://www.duckdb.org). 59+ SQL functions for technical analysis, risk management, portfolio analytics, options pricing, and market data access.
 
-35+ functions for technical analysis, risk management, portfolio analytics, and real-time market data — all in pure SQL.
+> **Note:** This codebase is currently maintained and updated by an AI agent running Claude Code. While all changes go through CI and automated testing, use with appropriate caution and review before relying on it for financial decisions.
+
+> **Disclaimer:** This extension is not affiliated with the [DuckDB Foundation](https://duckdb.org/foundation/) or [DuckDB Labs](https://duckdblabs.com/). Binaries are unsigned.
 
 ```sql
 INSTALL scrooge FROM community;
 LOAD scrooge;
 
--- Get AAPL data and analyze
 SELECT date, close,
     ema(close, date::TIMESTAMPTZ, 20) as ema_20,
     rsi(close, date::TIMESTAMPTZ, 14) as rsi_14,
-    bollinger_signal(close, 
+    bollinger_signal(close,
         bollinger_upper(close, date::TIMESTAMPTZ, 20, 2.0),
         bollinger_lower(close, date::TIMESTAMPTZ, 20, 2.0)) as signal
 FROM yahoo_finance('AAPL', '2024-01-01', '2025-01-01', '1d')
 GROUP BY ALL;
 ```
 
-> **Disclaimer:** This extension is not affiliated with the [DuckDB Foundation](https://duckdb.org/foundation/) or [DuckDB Labs](https://duckdblabs.com/).
-
 ## Quick Start
 
 ```sql
--- Install and load
 INSTALL scrooge FROM community;
 LOAD scrooge;
 
--- Fetch stock data
+-- Stock data
 SELECT * FROM yahoo_finance('MSFT', '2024-01-01', '2025-01-01', '1d');
 
--- Fetch economic data (requires free FRED API key)
+-- Crypto data (free, no API key)
+SELECT * FROM coingecko('bitcoin', 'usd', 365);
+
+-- Economic data (requires free FRED API key)
 SELECT * FROM fred_series('GDP', 'your_api_key');
 ```
 
 ## Functions
 
-### 📈 Technical Indicators
+### Technical Indicators
+
 | Function | Description |
 |----------|-------------|
 | `ema(close, timestamp, period)` | Exponential Moving Average |
+| `dema(close, timestamp, period)` | Double EMA (reduced lag) |
+| `tema(close, timestamp, period)` | Triple EMA (minimal lag) |
+| `wma(close, timestamp, period)` | Weighted Moving Average |
 | `rsi(close, timestamp, period)` | Relative Strength Index |
 | `macd(close, timestamp)` | MACD Line |
 | `bollinger_upper/lower/middle/width(close, ts, period, stddev)` | Bollinger Bands |
@@ -51,8 +56,10 @@ SELECT * FROM fred_series('GDP', 'your_api_key');
 | `mfi(high, low, close, volume, timestamp, period)` | Money Flow Index |
 | `cmf(high, low, close, volume, timestamp, period)` | Chaikin Money Flow |
 | `ad_line(high, low, close, volume, timestamp)` | Accumulation/Distribution Line |
+| `pivot_point/pivot_r1/pivot_r2/pivot_r3/pivot_s1/pivot_s2/pivot_s3(h, l, c)` | Pivot Points |
 
-### 💰 Returns & Risk
+### Returns and Risk
+
 | Function | Description |
 |----------|-------------|
 | `simple_return(close, timestamp)` | Simple return |
@@ -61,9 +68,15 @@ SELECT * FROM fred_series('GDP', 'your_api_key');
 | `sharpe_ratio(returns, timestamp)` | Sharpe ratio |
 | `sortino_ratio(returns, timestamp)` | Sortino ratio |
 | `max_drawdown(close, timestamp)` | Maximum drawdown |
-| `value_at_risk(returns, timestamp, confidence)` | Value at Risk (VaR) |
+| `value_at_risk(returns, timestamp, confidence)` | Value at Risk |
+| `annualized_volatility(returns)` | Annualized volatility |
+| `calmar_ratio(returns, close, timestamp)` | Calmar ratio |
+| `information_ratio(asset_returns, benchmark_returns)` | Information ratio |
+| `drawdown_duration(close, timestamp)` | Longest drawdown in days |
+| `profit_factor(returns)` | Sum of wins / sum of losses |
 
-### 🕯️ Candlestick Patterns
+### Candlestick Patterns
+
 | Function | Returns |
 |----------|---------|
 | `is_doji(open, high, low, close)` | `BOOLEAN` |
@@ -73,15 +86,17 @@ SELECT * FROM fred_series('GDP', 'your_api_key');
 | `is_morning_star(o1, c1, o2, h2, l2, c2, o3, c3)` | `BOOLEAN` |
 | `is_evening_star(o1, c1, o2, h2, l2, c2, o3, c3)` | `BOOLEAN` |
 
-### 📊 Portfolio Analytics
+### Portfolio Analytics
+
 | Function | Description |
 |----------|-------------|
-| `portfolio_correlation(returns_a, returns_b)` | Pearson correlation between assets |
+| `portfolio_correlation(returns_a, returns_b)` | Pearson correlation |
 | `portfolio_beta(asset_returns, benchmark_returns)` | Systematic risk (beta) |
 | `momentum_score(close, timestamp, period_days)` | Rate-of-change momentum |
 | `relative_strength(asset_close, benchmark_close, ts)` | Performance vs benchmark |
 
-### 🚦 Signal Generation
+### Signal Generation
+
 | Function | Description |
 |----------|-------------|
 | `ma_crossover_signal(fast_ma, slow_ma)` | `'BUY'/'SELL'/'HOLD'` |
@@ -90,14 +105,29 @@ SELECT * FROM fred_series('GDP', 'your_api_key');
 | `kelly_fraction(win_rate, avg_win, avg_loss)` | Optimal position size [0,1] |
 | `composite_score(rsi, macd, bb_pct, obv_pct)` | Multi-indicator conviction [-100,100] |
 
-### 📡 Data Scanners
+### Options Pricing (Black-Scholes)
+
+| Function | Description |
+|----------|-------------|
+| `bs_call(S, K, T, r, sigma)` | Call option price |
+| `bs_put(S, K, T, r, sigma)` | Put option price |
+| `bs_delta_call / bs_delta_put` | Delta |
+| `bs_gamma` | Gamma |
+| `bs_theta_call / bs_theta_put` | Theta (per day) |
+| `bs_vega` | Vega (per 1% vol) |
+| `bs_implied_vol(price, S, K, T, r, is_call)` | Implied volatility |
+
+### Data Scanners
+
 | Function | Description |
 |----------|-------------|
 | `yahoo_finance(symbol, from, to, interval)` | Yahoo Finance OHLCV data |
+| `coingecko(coin_id, vs_currency, days)` | CoinGecko crypto OHLC data |
 | `fred_series(series_id, api_key [, start, end])` | Federal Reserve economic data |
 | `read_eth(url, method, from_block, to_block)` | Ethereum blockchain logs |
 
-### ⏱️ Utility
+### Utility
+
 | Function | Description |
 |----------|-------------|
 | `first_s(value, timestamp)` | First value by timestamp |
@@ -106,9 +136,9 @@ SELECT * FROM fred_series('GDP', 'your_api_key');
 
 ## Examples
 
-### Full Analysis Pipeline
+### Analysis Pipeline
+
 ```sql
--- Combine technical indicators with signals
 WITH prices AS (
     SELECT * FROM yahoo_finance('AAPL', '2024-01-01', '2025-01-01', '1d')
 )
@@ -120,23 +150,24 @@ FROM prices
 GROUP BY ALL;
 ```
 
-### Portfolio Diversification
+### Options Analysis
+
 ```sql
--- Check if your positions are too correlated
-SELECT 
-    portfolio_correlation(aapl_ret, msft_ret) as aapl_msft_corr,
-    portfolio_beta(aapl_ret, spy_ret) as aapl_beta
-FROM returns_table;
+-- Price a call option and compute Greeks
+SELECT
+    bs_call(150, 145, 0.25, 0.05, 0.30) as call_price,
+    bs_delta_call(150, 145, 0.25, 0.05, 0.30) as delta,
+    bs_gamma(150, 145, 0.25, 0.05, 0.30) as gamma,
+    bs_implied_vol(12.5, 150, 145, 0.25, 0.05, true) as implied_vol;
 ```
 
-### Macro + Stock Analysis
+### Portfolio Diversification
+
 ```sql
--- Compare stock performance vs Fed funds rate
-SELECT p.date, p.close, f.value as fed_rate,
-    momentum_score(p.close, p.date::TIMESTAMPTZ, 90) as momentum_3m
-FROM yahoo_finance('SPY', '2023-01-01', '2025-01-01', '1d') p
-JOIN fred_series('DFF', :api_key, '2023-01-01', '2025-01-01') f ON p.date = f.date
-GROUP BY ALL;
+SELECT
+    portfolio_correlation(aapl_ret, msft_ret) as correlation,
+    portfolio_beta(aapl_ret, spy_ret) as beta
+FROM returns_table;
 ```
 
 ## Build
@@ -147,13 +178,13 @@ cd Scrooge-McDuck
 GEN=ninja make
 ```
 
-## Why Scrooge?
+## Why Scrooge
 
-1. **Pure SQL financial analysis** — no Python glue code needed
-2. **Privacy** — DuckDB runs locally, your portfolio data stays private
-3. **Free** — MIT licensed, no cloud costs
-4. **Fast** — columnar storage + vectorized execution
-5. **Composable** — combine indicators, signals, and data sources in a single query
+1. **Pure SQL** -- no Python glue code needed for financial analysis
+2. **Privacy** -- DuckDB runs locally, portfolio data stays on your machine
+3. **Free** -- MIT licensed, no cloud costs
+4. **Fast** -- columnar storage and vectorized execution
+5. **Composable** -- combine indicators, signals, and data sources in a single query
 
 ## Roadmap
 
