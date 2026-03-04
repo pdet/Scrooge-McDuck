@@ -1,0 +1,11 @@
+# name: test/sql/scrooge/test_coingecko.test
+# description: Test CoinGecko scanner (requires network)
+# group: [scrooge]
+
+require scrooge
+
+require httpfs
+
+# Basic query - may fail without network, so just test binding
+statement ok
+SELECT * FROM coingecko('bitcoin', 'usd', 7) LIMIT 0;

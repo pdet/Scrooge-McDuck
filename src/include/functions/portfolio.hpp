@@ -6,6 +6,7 @@ namespace duckdb {
 namespace scrooge {
 
 void RegisterPortfolioFunctions(Connection &conn, Catalog &catalog);
+void RegisterOptionsFunctions(Connection &conn, Catalog &catalog);
 
 } // namespace scrooge
 } // namespace duckdb

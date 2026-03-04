@@ -52,7 +52,9 @@ set(EXTENSION_SOURCES
     src/functions/portfolio/signals.cpp
     src/functions/portfolio/composite.cpp
     src/functions/portfolio/drawdown.cpp
-    src/functions/portfolio/volatility.cpp)
+    src/functions/portfolio/volatility.cpp
+    src/functions/portfolio/options.cpp
+    src/scanner/coingecko.cpp)
 
 build_static_extension(${TARGET_NAME} ${EXTENSION_SOURCES})
 build_loadable_extension(${TARGET_NAME} " " ${EXTENSION_SOURCES})

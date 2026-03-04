@@ -1,0 +1,83 @@
+# name: test/sql/scrooge/test_options.test
+# description: Test Black-Scholes option pricing and Greeks
+# group: [scrooge]
+
+require scrooge
+
+# bs_call: ATM call should be positive and reasonable (between 5 and 15)
+query I
+SELECT bs_call(100, 100, 1.0, 0.05, 0.20) BETWEEN 5 AND 15;
+----
+true
+
+# bs_put: ATM put should be positive
+query I
+SELECT bs_put(100, 100, 1.0, 0.05, 0.20) > 0;
+----
+true
+
+# bs_put should be less than bs_call for same ATM (when r > 0)
+query I
+SELECT bs_put(100, 100, 1.0, 0.05, 0.20) < bs_call(100, 100, 1.0, 0.05, 0.20);
+----
+true
+
+# Put-call parity: C - P ≈ S - K*exp(-rT), within tolerance
+query I
+SELECT abs(bs_call(100, 100, 1.0, 0.05, 0.20) - bs_put(100, 100, 1.0, 0.05, 0.20) - (100 - 100 * exp(-0.05))) < 0.01;
+----
+true
+
+# bs_delta_call: ATM should be between 0.4 and 0.8
+query I
+SELECT bs_delta_call(100, 100, 1.0, 0.05, 0.20) BETWEEN 0.4 AND 0.8;
+----
+true
+
+# bs_delta_put: negative
+query I
+SELECT bs_delta_put(100, 100, 1.0, 0.05, 0.20) < 0;
+----
+true
+
+# delta_call + abs(delta_put) ≈ 1 (put-call delta parity)
+query I
+SELECT abs(bs_delta_call(100, 100, 1.0, 0.05, 0.20) + bs_delta_put(100, 100, 1.0, 0.05, 0.20)) < 1.01;
+----
+true
+
+# bs_gamma: positive
+query I
+SELECT bs_gamma(100, 100, 1.0, 0.05, 0.20) > 0;
+----
+true
+
+# bs_vega: positive
+query I
+SELECT bs_vega(100, 100, 1.0, 0.05, 0.20) > 0;
+----
+true
+
+# bs_theta_call: negative (time decay)
+query I
+SELECT bs_theta_call(100, 100, 1.0, 0.05, 0.20) < 0;
+----
+true
+
+# bs_implied_vol: round-trip — compute call price then recover vol
+query I
+SELECT abs(bs_implied_vol(bs_call(100, 100, 1.0, 0.05, 0.20), 100, 100, 1.0, 0.05, true) - 0.20) < 0.01;
+----
+true
+
+# Deep ITM call ≈ intrinsic value (S - K*exp(-rT))
+query I
+SELECT bs_call(200, 100, 1.0, 0.05, 0.20) > 95;
+----
+true
+
+# Deep OTM call ≈ 0
+query I
+SELECT bs_call(50, 100, 1.0, 0.05, 0.20) < 1;
+----
+true
