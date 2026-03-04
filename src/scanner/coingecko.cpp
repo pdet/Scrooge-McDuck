@@ -65,7 +65,7 @@ static void CoinGeckoScan(ClientContext &context, TableFunctionInput &input, Dat
 
 	auto result = conn.Query(query);
 	if (result->HasError()) {
-		throw InvalidInputError("CoinGecko query failed: %s", result->GetError());
+		throw InvalidInputException("CoinGecko query failed: %s", result->GetError());
 	}
 
 	idx_t row_count = 0;
