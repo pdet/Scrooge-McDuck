@@ -6,5 +6,6 @@ duckdb_extension_load(scrooge
     LOAD_TESTS
 )
 
-# Build the httpfs extension to test with s3/http
+# Build the httpfs extension (needed for Yahoo scanner HTTP requests)
+duckdb_extension_load(httpfs)
 duckdb_extension_load(json)
