@@ -1,0 +1,49 @@
+# name: test/sql/scrooge/test_volatility.test
+# description: Test annualized_volatility, calmar_ratio, information_ratio
+# group: [scrooge]
+
+require scrooge
+
+# annualized_volatility: constant returns → 0
+query I
+SELECT round(annualized_volatility(r), 2) FROM (VALUES
+    (0.01), (0.01), (0.01), (0.01)
+) AS t(r);
+----
+0.0
+
+# annualized_volatility: variable returns → positive
+query I
+SELECT annualized_volatility(r) > 0 FROM (VALUES
+    (0.05), (-0.03), (0.02), (-0.01), (0.04), (-0.02)
+) AS t(r);
+----
+true
+
+# calmar_ratio: positive returns, small drawdown → high ratio
+query I
+SELECT calmar_ratio(ret, close, ts) > 0 FROM (VALUES
+    (0.01, 100.0, '2024-01-01'::TIMESTAMPTZ),
+    (0.02, 102.0, '2024-01-02'::TIMESTAMPTZ),
+    (0.01, 103.0, '2024-01-03'::TIMESTAMPTZ),
+    (-0.01, 101.0, '2024-01-04'::TIMESTAMPTZ),
+    (0.02, 105.0, '2024-01-05'::TIMESTAMPTZ)
+) AS t(ret, close, ts);
+----
+true
+
+# information_ratio: outperformance → positive
+query I
+SELECT information_ratio(a, b) > 0 FROM (VALUES
+    (0.05, 0.01), (0.03, 0.01), (0.04, 0.02), (0.06, 0.01)
+) AS t(a, b);
+----
+true
+
+# information_ratio: same returns → 0
+query I
+SELECT round(information_ratio(a, b), 2) FROM (VALUES
+    (0.01, 0.01), (0.02, 0.02), (0.03, 0.03)
+) AS t(a, b);
+----
+0.0
