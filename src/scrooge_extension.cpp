@@ -9,6 +9,7 @@
 #include "functions/risk.hpp"
 #include "functions/candlestick.hpp"
 #include "functions/portfolio.hpp"
+#include "scanner/coingecko.hpp"
 #include "duckdb.hpp"
 #include "duckdb/function/table_function.hpp"
 #include "duckdb/main/client_context.hpp"
@@ -59,6 +60,12 @@ static void LoadInternal(ExtensionLoader &loader) {
 
 	// FRED Economic Data Scanner
 	scrooge::RegisterFredScanner(con, catalog);
+
+	// CoinGecko Crypto Scanner
+	scrooge::RegisterCoinGeckoScanner(con, catalog);
+
+	// Options pricing (Black-Scholes)
+	scrooge::RegisterOptionsFunctions(con, catalog);
 
 	// Ethereum Scanner
 	TableFunction ethereum_rpc_scanner("read_eth",
