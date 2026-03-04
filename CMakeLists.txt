@@ -35,6 +35,7 @@ set(EXTENSION_SOURCES
     src/functions/technical/vwap.cpp
     src/functions/technical/obv.cpp
     src/functions/technical/atr.cpp
+    src/functions/technical/mfi.cpp
     src/functions/candlestick/candlestick.cpp
     src/functions/technical/stochastic.cpp
     # Phase 2: Returns

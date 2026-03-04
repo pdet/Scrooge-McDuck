@@ -1,0 +1,36 @@
+# name: test/sql/scrooge/test_mfi.test
+# description: Test MFI (Money Flow Index) function
+# group: [scrooge]
+
+require scrooge
+
+# MFI with known data — all up days → MFI = 100
+query I
+SELECT mfi(high, low, close, volume, ts, 3) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 10.0, 9.0, 9.5, 1000.0),
+    ('2024-01-02'::TIMESTAMPTZ, 11.0, 10.0, 10.5, 1200.0),
+    ('2024-01-03'::TIMESTAMPTZ, 12.0, 11.0, 11.5, 1100.0),
+    ('2024-01-04'::TIMESTAMPTZ, 13.0, 12.0, 12.5, 900.0)
+) AS t(ts, high, low, close, volume);
+----
+100.0
+
+# MFI returns value between 0 and 100
+query I
+SELECT mfi(high, low, close, volume, ts) BETWEEN 0 AND 100 FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 48.70, 47.79, 48.16, 1000.0),
+    ('2024-01-02'::TIMESTAMPTZ, 48.72, 48.14, 48.61, 1500.0),
+    ('2024-01-03'::TIMESTAMPTZ, 48.90, 48.39, 48.75, 800.0),
+    ('2024-01-04'::TIMESTAMPTZ, 48.87, 48.37, 48.63, 1200.0),
+    ('2024-01-05'::TIMESTAMPTZ, 48.82, 48.24, 48.74, 900.0)
+) AS t(ts, high, low, close, volume);
+----
+true
+
+# Empty → NULL
+query I
+SELECT mfi(high, low, close, volume, ts) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 10.0, 9.0, 9.5, 100.0)
+) AS t(ts, high, low, close, volume) WHERE 1=0;
+----
+NULL
