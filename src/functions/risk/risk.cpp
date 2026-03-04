@@ -2,6 +2,7 @@
 #include "duckdb/function/function_set.hpp"
 #include "duckdb/parser/parsed_data/create_aggregate_function_info.hpp"
 #include "duckdb/common/helper.hpp"
+#include "duckdb/execution/expression_executor.hpp"
 #include <cmath>
 #include <algorithm>
 
@@ -23,7 +24,7 @@ struct SharpeState {
 	bool rfr_set;
 };
 
-static void SharpeInitialize(AggregateInputData &, data_ptr_t state_p) {
+static void SharpeInitialize(const AggregateFunction &, data_ptr_t state_p) {
 	auto &state = *reinterpret_cast<SharpeState *>(state_p);
 	state.returns = nullptr;
 	state.risk_free_rate = 0.0;
@@ -242,7 +243,7 @@ struct MaxDrawdownState {
 	std::vector<Entry> *entries;
 };
 
-static void MaxDrawdownInitialize(AggregateInputData &, data_ptr_t state_p) {
+static void MaxDrawdownInitialize(const AggregateFunction &, data_ptr_t state_p) {
 	auto &state = *reinterpret_cast<MaxDrawdownState *>(state_p);
 	state.entries = nullptr;
 }

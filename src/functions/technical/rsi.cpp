@@ -2,6 +2,7 @@
 #include "duckdb/function/function_set.hpp"
 #include "duckdb/parser/parsed_data/create_aggregate_function_info.hpp"
 #include "duckdb/common/helper.hpp"
+#include "duckdb/execution/expression_executor.hpp"
 
 namespace duckdb {
 namespace scrooge {
@@ -40,7 +41,7 @@ struct RsiListState {
 	std::vector<Entry> *entries;
 };
 
-static void RsiInitialize(AggregateInputData &, data_ptr_t state_p) {
+static void RsiInitialize(const AggregateFunction &, data_ptr_t state_p) {
 	auto &state = *reinterpret_cast<RsiListState *>(state_p);
 	state.entries = nullptr;
 }

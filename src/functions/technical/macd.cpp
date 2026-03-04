@@ -2,6 +2,7 @@
 #include "duckdb/function/function_set.hpp"
 #include "duckdb/parser/parsed_data/create_table_function_info.hpp"
 #include "duckdb/common/helper.hpp"
+#include "duckdb/execution/expression_executor.hpp"
 #include <algorithm>
 #include <vector>
 
@@ -59,7 +60,7 @@ struct MacdListState {
 	std::vector<Entry> *entries;
 };
 
-static void MacdInitialize(AggregateInputData &, data_ptr_t state_p) {
+static void MacdInitialize(const AggregateFunction &, data_ptr_t state_p) {
 	auto &state = *reinterpret_cast<MacdListState *>(state_p);
 	state.entries = nullptr;
 }

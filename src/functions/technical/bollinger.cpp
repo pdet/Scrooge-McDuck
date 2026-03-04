@@ -2,6 +2,7 @@
 #include "duckdb/function/function_set.hpp"
 #include "duckdb/parser/parsed_data/create_aggregate_function_info.hpp"
 #include "duckdb/common/helper.hpp"
+#include "duckdb/execution/expression_executor.hpp"
 #include <algorithm>
 #include <cmath>
 #include <vector>
@@ -48,7 +49,7 @@ struct BollingerListState {
 	std::vector<Entry> *entries;
 };
 
-static void BollingerInitialize(AggregateInputData &, data_ptr_t state_p) {
+static void BollingerInitialize(const AggregateFunction &, data_ptr_t state_p) {
 	auto &state = *reinterpret_cast<BollingerListState *>(state_p);
 	state.entries = nullptr;
 }
