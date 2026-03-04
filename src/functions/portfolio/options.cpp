@@ -1,7 +1,10 @@
+#include "functions/portfolio.hpp"
 #include "duckdb/function/scalar_function.hpp"
 #include "duckdb/function/function_set.hpp"
 #include "duckdb/parser/parsed_data/create_scalar_function_info.hpp"
 #include "duckdb/common/vector_operations/vector_operations.hpp"
+#include "duckdb/main/connection.hpp"
+#include "duckdb/catalog/catalog.hpp"
 #include <cmath>
 
 namespace duckdb {
@@ -62,80 +65,79 @@ static BSParams ComputeBS(double S, double K, double T, double r, double sigma) 
 	return p;
 }
 
-// Macro to define a 5-arg scalar function (S, K, T, r, sigma)
+// Helper to iterate over 5 input vectors and compute BS result
+static void BSIterate(DataChunk &args, Vector &result,
+                      std::function<double(const BSParams &)> compute) {
+	UnifiedVectorFormat sf, kf, tf, rf, sigf;
+	args.data[0].ToUnifiedFormat(args.size(), sf);
+	args.data[1].ToUnifiedFormat(args.size(), kf);
+	args.data[2].ToUnifiedFormat(args.size(), tf);
+	args.data[3].ToUnifiedFormat(args.size(), rf);
+	args.data[4].ToUnifiedFormat(args.size(), sigf);
+	auto s_data = UnifiedVectorFormat::GetData<double>(sf);
+	auto k_data = UnifiedVectorFormat::GetData<double>(kf);
+	auto t_data = UnifiedVectorFormat::GetData<double>(tf);
+	auto r_data = UnifiedVectorFormat::GetData<double>(rf);
+	auto sig_data = UnifiedVectorFormat::GetData<double>(sigf);
+	auto result_data = FlatVector::GetData<double>(result);
+	auto &validity = FlatVector::Validity(result);
+	result.SetVectorType(VectorType::FLAT_VECTOR);
+	for (idx_t i = 0; i < args.size(); i++) {
+		auto si = sf.sel->get_index(i);
+		auto ki = kf.sel->get_index(i);
+		auto ti = tf.sel->get_index(i);
+		auto ri = rf.sel->get_index(i);
+		auto sigi = sigf.sel->get_index(i);
+		if (!sf.validity.RowIsValid(si) || !kf.validity.RowIsValid(ki) ||
+		    !tf.validity.RowIsValid(ti) || !rf.validity.RowIsValid(ri) ||
+		    !sigf.validity.RowIsValid(sigi)) {
+			validity.SetInvalid(i); continue;
+		}
+		auto p = ComputeBS(s_data[si], k_data[ki], t_data[ti], r_data[ri], sig_data[sigi]);
+		if (!p.valid) { validity.SetInvalid(i); continue; }
+		result_data[i] = compute(p);
+	}
+}
+
 #define DEFINE_BS_FUNC(name, body) \
 static void name##Func(DataChunk &args, ExpressionState &, Vector &result) { \
-	auto &S_vec = args.data[0]; \
-	auto &K_vec = args.data[1]; \
-	auto &T_vec = args.data[2]; \
-	auto &r_vec = args.data[3]; \
-	auto &sig_vec = args.data[4]; \
-	BinaryExecutor::Execute<double, double, double>(S_vec, K_vec, result, args.size(), \
-		[](double, double) -> double { return 0; }); /* placeholder - we override below */ \
-	UnifiedVectorFormat sf, kf, tf, rf, sigf; \
-	S_vec.ToUnifiedFormat(args.size(), sf); \
-	K_vec.ToUnifiedFormat(args.size(), kf); \
-	T_vec.ToUnifiedFormat(args.size(), tf); \
-	r_vec.ToUnifiedFormat(args.size(), rf); \
-	sig_vec.ToUnifiedFormat(args.size(), sigf); \
-	auto s_data = UnifiedVectorFormat::GetData<double>(sf); \
-	auto k_data = UnifiedVectorFormat::GetData<double>(kf); \
-	auto t_data = UnifiedVectorFormat::GetData<double>(tf); \
-	auto r_data = UnifiedVectorFormat::GetData<double>(rf); \
-	auto sig_data = UnifiedVectorFormat::GetData<double>(sigf); \
-	auto result_data = FlatVector::GetData<double>(result); \
-	auto &validity = FlatVector::Validity(result); \
-	for (idx_t i = 0; i < args.size(); i++) { \
-		auto si = sf.sel->get_index(i); \
-		auto ki = kf.sel->get_index(i); \
-		auto ti = tf.sel->get_index(i); \
-		auto ri = rf.sel->get_index(i); \
-		auto sigi = sigf.sel->get_index(i); \
-		if (!sf.validity.RowIsValid(si) || !kf.validity.RowIsValid(ki) || \
-		    !tf.validity.RowIsValid(ti) || !rf.validity.RowIsValid(ri) || \
-		    !sigf.validity.RowIsValid(sigi)) { \
-			validity.SetInvalid(i); continue; \
-		} \
-		auto p = ComputeBS(s_data[si], k_data[ki], t_data[ti], r_data[ri], sig_data[sigi]); \
-		if (!p.valid) { validity.SetInvalid(i); continue; } \
-		body \
-	} \
+	BSIterate(args, result, [](const BSParams &p) -> double { body }); \
 }
 
 DEFINE_BS_FUNC(BSCall, {
-	result_data[i] = p.S * NormCDF(p.d1) - p.K * std::exp(-p.r * p.T) * NormCDF(p.d2);
+	return p.S * NormCDF(p.d1) - p.K * std::exp(-p.r * p.T) * NormCDF(p.d2);
 })
 
 DEFINE_BS_FUNC(BSPut, {
-	result_data[i] = p.K * std::exp(-p.r * p.T) * NormCDF(-p.d2) - p.S * NormCDF(-p.d1);
+	return p.K * std::exp(-p.r * p.T) * NormCDF(-p.d2) - p.S * NormCDF(-p.d1);
 })
 
 DEFINE_BS_FUNC(BSDeltaCall, {
-	result_data[i] = NormCDF(p.d1);
+	return NormCDF(p.d1);
 })
 
 DEFINE_BS_FUNC(BSDeltaPut, {
-	result_data[i] = NormCDF(p.d1) - 1.0;
+	return NormCDF(p.d1) - 1.0;
 })
 
 DEFINE_BS_FUNC(BSGamma, {
-	result_data[i] = NormPDF(p.d1) / (p.S * p.sigma * std::sqrt(p.T));
+	return NormPDF(p.d1) / (p.S * p.sigma * std::sqrt(p.T));
 })
 
 DEFINE_BS_FUNC(BSThetaCall, {
 	double term1 = -(p.S * NormPDF(p.d1) * p.sigma) / (2.0 * std::sqrt(p.T));
 	double term2 = -p.r * p.K * std::exp(-p.r * p.T) * NormCDF(p.d2);
-	result_data[i] = (term1 + term2) / 365.0; // per day
+	return (term1 + term2) / 365.0;
 })
 
 DEFINE_BS_FUNC(BSThetaPut, {
 	double term1 = -(p.S * NormPDF(p.d1) * p.sigma) / (2.0 * std::sqrt(p.T));
 	double term2 = p.r * p.K * std::exp(-p.r * p.T) * NormCDF(-p.d2);
-	result_data[i] = (term1 + term2) / 365.0; // per day
+	return (term1 + term2) / 365.0;
 })
 
 DEFINE_BS_FUNC(BSVega, {
-	result_data[i] = p.S * NormPDF(p.d1) * std::sqrt(p.T) / 100.0; // per 1% vol move
+	return p.S * NormPDF(p.d1) * std::sqrt(p.T) / 100.0;
 })
 
 // bs_implied_vol: Newton-Raphson to find sigma given option price
