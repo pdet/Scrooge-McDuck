@@ -92,8 +92,8 @@ SELECT round(kelly_fraction(0.3, 1.0, 1.0), 2);
 ----
 0.0
 
-# High edge → clamped to 1.0
+# High edge → near 1.0
 query I
 SELECT round(kelly_fraction(0.99, 10.0, 0.1), 2);
 ----
-1.0
+0.99

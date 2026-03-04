@@ -60,15 +60,15 @@ static void CompositeScoreFunction(DataChunk &args, ExpressionState &state, Vect
 		double bb_pct = bb_vals[bi];
 		double obv_pct = obv_vals[oi];
 
-		// RSI component: 50 is neutral, >50 is bearish pressure, <50 is bullish
-		double rsi_score = (50.0 - rsi) * -1.0;  // maps to [-50, 50]
+		// RSI component: 50 is neutral, <50 = oversold = bullish, >50 = overbought = bearish
+		double rsi_score = 50.0 - rsi;  // low RSI → positive (bullish), high RSI → negative (bearish)
 		rsi_score = std::max(-25.0, std::min(25.0, rsi_score));
 
 		// MACD component: positive = bullish
 		double macd_score = (macd > 0 ? 1.0 : -1.0) * std::min(std::abs(macd) * 10.0, 25.0);
 
-		// Bollinger %B: 0 = at lower band (bullish), 1 = at upper (bearish), 0.5 = middle
-		double bb_score = (bb_pct - 0.5) * 50.0;
+		// Bollinger %B: 0 = at lower band (oversold=bullish), 1 = at upper (overbought=bearish)
+		double bb_score = (0.5 - bb_pct) * 50.0;  // low %B → positive (bullish)
 		bb_score = std::max(-25.0, std::min(25.0, bb_score));
 
 		// OBV momentum: positive change = bullish
