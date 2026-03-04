@@ -218,7 +218,7 @@ static unique_ptr<FunctionData> BindWidth(ClientContext &ctx, AggregateFunction 
 	return BollingerBindFactory(ctx, f, args, BollingerFunctionData::Band::WIDTH);
 }
 
-static void RegisterBollingerVariant(const string &name, aggregate_bind_t bind_fn, Connection &conn,
+static void RegisterBollingerVariant(const string &name, bind_aggregate_function_t bind_fn, Connection &conn,
                                       Catalog &catalog) {
 	AggregateFunctionSet func_set(name);
 
