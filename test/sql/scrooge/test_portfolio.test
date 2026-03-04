@@ -1,0 +1,106 @@
+# name: test/sql/scrooge/test_portfolio.test
+# description: Test portfolio analytics functions
+# group: [scrooge]
+
+require scrooge
+
+# ─── portfolio_correlation ──────────────────────────────────
+
+# Perfect positive correlation
+query I
+SELECT round(portfolio_correlation(a, b), 2) FROM (VALUES
+    (1.0, 2.0), (2.0, 4.0), (3.0, 6.0), (4.0, 8.0), (5.0, 10.0)
+) AS t(a, b);
+----
+1.0
+
+# Perfect negative correlation
+query I
+SELECT round(portfolio_correlation(a, b), 2) FROM (VALUES
+    (1.0, 10.0), (2.0, 8.0), (3.0, 6.0), (4.0, 4.0), (5.0, 2.0)
+) AS t(a, b);
+----
+-1.0
+
+# No correlation (orthogonal)
+query I
+SELECT round(portfolio_correlation(a, b), 1) FROM (VALUES
+    (1.0, 0.0), (0.0, 1.0), (-1.0, 0.0), (0.0, -1.0)
+) AS t(a, b);
+----
+0.0
+
+# Single value → NULL
+query I
+SELECT portfolio_correlation(a, b) FROM (VALUES (1.0, 2.0)) AS t(a, b);
+----
+NULL
+
+# ─── portfolio_beta ────────────────────────────────────────
+
+# Asset moves exactly with benchmark → beta = 1
+query I
+SELECT round(portfolio_beta(a, b), 2) FROM (VALUES
+    (0.01, 0.01), (0.02, 0.02), (-0.01, -0.01), (0.03, 0.03)
+) AS t(a, b);
+----
+1.0
+
+# Asset moves 2x benchmark → beta = 2
+query I
+SELECT round(portfolio_beta(a, b), 2) FROM (VALUES
+    (0.02, 0.01), (0.04, 0.02), (-0.02, -0.01), (0.06, 0.03)
+) AS t(a, b);
+----
+2.0
+
+# ─── momentum_score ────────────────────────────────────────
+
+# Stock went from 100 to 150 → 50% momentum
+query I
+SELECT round(momentum_score(close, ts, 365), 2) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0),
+    ('2024-06-01'::TIMESTAMPTZ, 120.0),
+    ('2024-12-01'::TIMESTAMPTZ, 150.0)
+) AS t(ts, close);
+----
+0.5
+
+# Stock went from 100 to 80 → -20% momentum
+query I
+SELECT round(momentum_score(close, ts, 365), 2) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0),
+    ('2024-06-01'::TIMESTAMPTZ, 90.0),
+    ('2024-12-01'::TIMESTAMPTZ, 80.0)
+) AS t(ts, close);
+----
+-0.2
+
+# ─── relative_strength ────────────────────────────────────
+
+# Asset doubles while benchmark stays flat → RS > 1
+query I
+SELECT round(relative_strength(asset, bench, ts), 2) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0, 100.0),
+    ('2024-12-01'::TIMESTAMPTZ, 200.0, 100.0)
+) AS t(ts, asset, bench);
+----
+2.0
+
+# Both double → RS = 1
+query I
+SELECT round(relative_strength(asset, bench, ts), 2) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0, 50.0),
+    ('2024-12-01'::TIMESTAMPTZ, 200.0, 100.0)
+) AS t(ts, asset, bench);
+----
+1.0
+
+# Asset flat, benchmark doubles → RS = 0.5
+query I
+SELECT round(relative_strength(asset, bench, ts), 2) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0, 100.0),
+    ('2024-12-01'::TIMESTAMPTZ, 100.0, 200.0)
+) AS t(ts, asset, bench);
+----
+0.5

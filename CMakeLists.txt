@@ -39,12 +39,16 @@ set(EXTENSION_SOURCES
     src/functions/technical/mfi.cpp
     src/functions/candlestick/candlestick.cpp
     src/functions/technical/stochastic.cpp
+    src/functions/technical/cmf.cpp
     # Phase 2: Returns
     src/functions/returns/returns.cpp
     # Phase 2: Risk metrics
     src/functions/risk/risk.cpp
     src/functions/risk/var.cpp
-    src/functions/risk/var.cpp)
+    # Portfolio analytics
+    src/functions/portfolio/registration.cpp
+    src/functions/portfolio/correlation.cpp
+    src/functions/portfolio/momentum.cpp)
 
 build_static_extension(${TARGET_NAME} ${EXTENSION_SOURCES})
 build_loadable_extension(${TARGET_NAME} " " ${EXTENSION_SOURCES})

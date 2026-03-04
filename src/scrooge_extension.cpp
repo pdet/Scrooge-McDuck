@@ -8,6 +8,7 @@
 #include "functions/returns.hpp"
 #include "functions/risk.hpp"
 #include "functions/candlestick.hpp"
+#include "functions/portfolio.hpp"
 #include "duckdb.hpp"
 #include "duckdb/function/table_function.hpp"
 #include "duckdb/main/client_context.hpp"
@@ -45,6 +46,9 @@ static void LoadInternal(ExtensionLoader &loader) {
 
 	// Phase 4: Candlestick patterns
 	scrooge::RegisterCandlestickFunctions(con, catalog);
+
+	// Portfolio analytics
+	scrooge::RegisterPortfolioFunctions(con, catalog);
 
 	// Yahoo Finance Scanner
 	TableFunction yahoo_scanner("yahoo_finance",
