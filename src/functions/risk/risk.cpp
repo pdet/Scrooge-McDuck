@@ -367,6 +367,9 @@ static void MaxDrawdownDestructor(Vector &state_vector, AggregateInputData &, id
 	}
 }
 
+// Forward declare VaR (in var.cpp)
+void RegisterVaRFunction(Connection &conn, Catalog &catalog);
+
 // ── Registration ─────────────────────────────────────────────
 
 void RegisterRiskFunctions(Connection &conn, Catalog &catalog) {
@@ -392,6 +395,9 @@ void RegisterRiskFunctions(Connection &conn, Catalog &catalog) {
 		CreateAggregateFunctionInfo info(sortino_func);
 		catalog.CreateFunction(*conn.context, info);
 	}
+
+	// value_at_risk — registered from var.cpp
+	RegisterVaRFunction(conn, catalog);
 
 	// max_drawdown(price, timestamp) → double
 	{
