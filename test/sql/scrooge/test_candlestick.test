@@ -4,59 +4,79 @@
 
 require scrooge
 
-# Doji: open ≈ close, body < 10% of range
+# is_doji: body very small relative to range
 query I
-SELECT is_doji(100.0, 105.0, 95.0, 100.5);
+SELECT is_doji(100.0, 110.0, 90.0, 100.1);
 ----
 true
 
-# Not a doji (big body)
+# not a doji: big body
 query I
-SELECT is_doji(95.0, 105.0, 94.0, 104.0);
+SELECT is_doji(90.0, 110.0, 85.0, 108.0);
 ----
 false
 
-# Hammer: small body at top, long lower shadow
-# open=100, high=101, low=90, close=100.5 → body=0.5, lower=10, upper=0.5
+# is_doji with custom threshold
 query I
-SELECT is_hammer(100.0, 101.0, 90.0, 100.5);
+SELECT is_doji(100.0, 110.0, 90.0, 102.0, 0.15);
 ----
 true
 
-# Not a hammer (body too big relative to lower shadow)
+# is_hammer: small body at top, long lower wick
+# body = |105-106| = 1, lower wick = 105-95 = 10 >= 2*1, upper = 107-106 = 1 <= 0.1*12
 query I
-SELECT is_hammer(90.0, 105.0, 89.0, 100.0);
-----
-false
-
-# Shooting star: small body at bottom, long upper shadow
-# open=100, high=110, low=99.5, close=100.5 → body=0.5, upper=9.5, lower=0.5
-query I
-SELECT is_shooting_star(100.0, 110.0, 99.5, 100.5);
+SELECT is_hammer(105.0, 107.0, 95.0, 106.0);
 ----
 true
 
-# Not a shooting star
+# not a hammer: big upper wick
 query I
-SELECT is_shooting_star(100.0, 101.0, 90.0, 100.5);
+SELECT is_hammer(100.0, 115.0, 99.0, 101.0);
 ----
 false
 
-# Marubozu: full body, no shadows
-# open=100, high=110, low=100, close=110 → body=10, upper=0, lower=0
+# is_shooting_star: long upper wick, small body at bottom
+# body = |100-99| = 1, upper = 110-100 = 10 >= 2*1, lower = 99-98 = 1 <= 0.1*12
 query I
-SELECT is_marubozu(100.0, 110.0, 100.0, 110.0);
+SELECT is_shooting_star(100.0, 110.0, 98.0, 99.0);
 ----
 true
 
-# Not a marubozu (has shadows)
+# is_engulfing: bullish engulfing
+# prev: bearish (open=105, close=100), curr: bullish (open=99, close=106)
+# curr body engulfs prev: 99<=100 and 106>=105
 query I
-SELECT is_marubozu(100.0, 115.0, 95.0, 110.0);
+SELECT is_engulfing(99.0, 107.0, 98.0, 106.0, 105.0, 100.0);
 ----
-false
+BULLISH
 
-# NULL handling
+# is_engulfing: bearish engulfing
+# prev: bullish (open=100, close=105), curr: bearish (open=106, close=99)
 query I
-SELECT is_doji(NULL, 105.0, 95.0, 100.0);
+SELECT is_engulfing(106.0, 107.0, 98.0, 99.0, 100.0, 105.0);
+----
+BEARISH
+
+# is_engulfing: no pattern
+query I
+SELECT is_engulfing(101.0, 103.0, 100.0, 102.0, 100.0, 103.0);
 ----
 NULL
+
+# is_morning_star: three-candle bullish reversal
+# Day 1: bearish (o=110, c=100) body=10
+# Day 2: small body below (o=98, c=99) body=1, gap: max(98,99)=99 < 100
+# Day 3: bullish (o=101, c=108) closes above midpoint of day1 (105)
+query I
+SELECT is_morning_star(110.0, 100.0, 98.0, 99.0, 101.0, 108.0);
+----
+true
+
+# is_evening_star: three-candle bearish reversal
+# Day 1: bullish (o=100, c=110) body=10
+# Day 2: small body above (o=112, c=111) body=1, gap: min(112,111)=111 > 110
+# Day 3: bearish (o=109, c=102) closes below midpoint of day1 (105)
+query I
+SELECT is_evening_star(100.0, 110.0, 112.0, 111.0, 109.0, 102.0);
+----
+true
