@@ -41,6 +41,7 @@ set(EXTENSION_SOURCES
     src/functions/returns/returns.cpp
     # Phase 2: Risk metrics
     src/functions/risk/risk.cpp
+    src/functions/risk/var.cpp
     src/functions/risk/var.cpp)
 
 build_static_extension(${TARGET_NAME} ${EXTENSION_SOURCES})

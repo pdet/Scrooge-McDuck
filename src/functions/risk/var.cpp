@@ -13,12 +13,11 @@ namespace scrooge {
 // ──────────────────────────────────────────────────────────────
 // VaR (Value at Risk) — Historical simulation method
 //
-// Usage:  value_at_risk(returns [, confidence_level])
+// Usage:  var(returns [, confidence_level])
 //
 // Returns the loss threshold at the given confidence level.
 // Default confidence: 0.95 (95%)
-// Uses the historical/percentile method: sort returns, pick the
-// (1-confidence) quantile.
+// VaR = negative of the (1 - confidence) percentile of returns
 // ──────────────────────────────────────────────────────────────
 
 struct VaRFunctionData : public FunctionData {
@@ -31,32 +30,31 @@ struct VaRFunctionData : public FunctionData {
 };
 
 struct VaRListState {
-	std::vector<double> *returns_list;
+	std::vector<double> *returns;
 };
 
 static void VaRInitialize(const AggregateFunction &, data_ptr_t state_p) {
 	auto &state = *reinterpret_cast<VaRListState *>(state_p);
-	state.returns_list = nullptr;
+	state.returns = nullptr;
 }
 
 static void VaRUpdate(Vector inputs[], AggregateInputData &, idx_t, Vector &state_vector, idx_t count) {
-	UnifiedVectorFormat ret_data, sdata;
-	inputs[0].ToUnifiedFormat(count, ret_data);
+	UnifiedVectorFormat input_data, sdata;
+	inputs[0].ToUnifiedFormat(count, input_data);
 	state_vector.ToUnifiedFormat(count, sdata);
 
-	auto returns = UnifiedVectorFormat::GetData<double>(ret_data);
+	auto values = UnifiedVectorFormat::GetData<double>(input_data);
 	auto states = (VaRListState **)sdata.data;
 
 	for (idx_t i = 0; i < count; i++) {
 		auto sidx = sdata.sel->get_index(i);
+		auto vidx = input_data.sel->get_index(i);
 		auto &state = *states[sidx];
-		if (!state.returns_list) {
-			state.returns_list = new std::vector<double>();
+		if (!input_data.validity.RowIsValid(vidx)) continue;
+		if (!state.returns) {
+			state.returns = new std::vector<double>();
 		}
-		auto ridx = ret_data.sel->get_index(i);
-		if (ret_data.validity.RowIsValid(ridx)) {
-			state.returns_list->push_back(returns[ridx]);
-		}
+		state.returns->push_back(values[vidx]);
 	}
 }
 
@@ -71,14 +69,13 @@ static void VaRCombine(Vector &source_vec, Vector &target_vec, AggregateInputDat
 		auto tidx = tgt_data.sel->get_index(i);
 		auto &source = *sources[sidx];
 		auto &target = *targets[tidx];
-		if (source.returns_list) {
-			if (!target.returns_list) {
-				target.returns_list = new std::vector<double>();
+		if (source.returns) {
+			if (!target.returns) {
+				target.returns = new std::vector<double>();
 			}
-			target.returns_list->insert(target.returns_list->end(), source.returns_list->begin(),
-			                            source.returns_list->end());
-			delete source.returns_list;
-			source.returns_list = nullptr;
+			target.returns->insert(target.returns->end(), source.returns->begin(), source.returns->end());
+			delete source.returns;
+			source.returns = nullptr;
 		}
 	}
 }
@@ -97,24 +94,33 @@ static void VaRFinalize(Vector &state_vector, AggregateInputData &aggr_input, Ve
 		auto &state = *states[sidx];
 		auto ridx = i + offset;
 
-		if (!state.returns_list || state.returns_list->empty()) {
+		if (!state.returns || state.returns->size() < 2) {
 			result_validity.SetInvalid(ridx);
 			continue;
 		}
 
-		auto &rets = *state.returns_list;
-		std::sort(rets.begin(), rets.end());
+		auto &returns = *state.returns;
+		std::sort(returns.begin(), returns.end());
 
-		// VaR at confidence level: pick the (1-confidence) percentile
 		double alpha = 1.0 - bind_data.confidence;
-		idx_t var_idx = (idx_t)std::floor(alpha * rets.size());
-		if (var_idx >= rets.size()) var_idx = rets.size() - 1;
+		// Index for the percentile
+		double idx_d = alpha * (returns.size() - 1);
+		idx_t lower = (idx_t)std::floor(idx_d);
+		idx_t upper = (idx_t)std::ceil(idx_d);
+		double frac = idx_d - lower;
 
-		// VaR is typically reported as a positive number (loss)
-		result_data[ridx] = -rets[var_idx];
+		double percentile_val;
+		if (lower == upper || upper >= returns.size()) {
+			percentile_val = returns[lower];
+		} else {
+			percentile_val = returns[lower] * (1.0 - frac) + returns[upper] * frac;
+		}
 
-		delete state.returns_list;
-		state.returns_list = nullptr;
+		// VaR is the negative of the percentile (loss is positive)
+		result_data[ridx] = -percentile_val;
+
+		delete state.returns;
+		state.returns = nullptr;
 	}
 }
 
@@ -125,9 +131,9 @@ static void VaRDestructor(Vector &state_vector, AggregateInputData &, idx_t coun
 	for (idx_t i = 0; i < count; i++) {
 		auto sidx = sdata.sel->get_index(i);
 		auto &state = *states[sidx];
-		if (state.returns_list) {
-			delete state.returns_list;
-			state.returns_list = nullptr;
+		if (state.returns) {
+			delete state.returns;
+			state.returns = nullptr;
 		}
 	}
 }
@@ -145,7 +151,7 @@ static unique_ptr<FunctionData> VaRBind(ClientContext &context, AggregateFunctio
 void RegisterVaRFunction(Connection &conn, Catalog &catalog) {
 	AggregateFunctionSet var_set("value_at_risk");
 
-	// value_at_risk(returns) — default 95%
+	// value_at_risk(returns) — default 95% confidence
 	var_set.AddFunction(AggregateFunction("value_at_risk", {LogicalType::DOUBLE}, LogicalType::DOUBLE,
 	                                      AggregateFunction::StateSize<VaRListState>, VaRInitialize, VaRUpdate,
 	                                      VaRCombine, VaRFinalize, nullptr, VaRBind, VaRDestructor));

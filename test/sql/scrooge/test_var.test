@@ -1,32 +1,33 @@
 # name: test/sql/scrooge/test_var.test
-# description: Test Value at Risk (VaR) function
+# description: Test Value at Risk (VaR)
 # group: [scrooge]
 
 require scrooge
 
-# VaR at 95%: sort returns, pick 5th percentile
-# Returns: -0.10, -0.05, -0.02, 0.01, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08
-# Sorted: -0.10, -0.05, -0.02, 0.01, 0.03, 0.04, 0.05, 0.06, 0.07, 0.08
-# 5% of 10 = 0.5 → floor(0.5)=0 → index 0 → -0.10
-# VaR = -(-0.10) = 0.10
+# VaR at 95% confidence — historical method
+# Returns sorted: -0.05, -0.03, -0.01, 0.01, 0.02, 0.03, 0.04, 0.05, 0.06, 0.08
+# alpha = 0.05, idx = 0.05 * 9 = 0.45
+# lower[0] = -0.05, upper[1] = -0.03
+# percentile = -0.05 * 0.55 + (-0.03) * 0.45 = -0.0275 + (-0.0135) = -0.041
+# VaR = 0.041
 query I
-SELECT round(value_at_risk(r), 2) FROM (VALUES
-    (-0.10), (-0.05), (-0.02), (0.01), (0.03),
-    (0.04), (0.05), (0.06), (0.07), (0.08)
+SELECT round(value_at_risk(r), 4) FROM (VALUES
+    (-0.05), (-0.03), (-0.01), (0.01), (0.02),
+    (0.03), (0.04), (0.05), (0.06), (0.08)
 ) AS t(r);
 ----
-0.1
+0.041
 
-# VaR at 90%: 10% of 10 = 1 → index 1 → -0.05 → VaR = 0.05
+# VaR at 99% — more extreme
 query I
-SELECT round(value_at_risk(r, 0.90), 2) FROM (VALUES
-    (-0.10), (-0.05), (-0.02), (0.01), (0.03),
-    (0.04), (0.05), (0.06), (0.07), (0.08)
+SELECT round(value_at_risk(r, 0.99), 4) FROM (VALUES
+    (-0.05), (-0.03), (-0.01), (0.01), (0.02),
+    (0.03), (0.04), (0.05), (0.06), (0.08)
 ) AS t(r);
 ----
-0.05
+0.0482
 
-# All positive returns → VaR is negative (no loss)
+# All positive returns → negative VaR (no loss)
 query I
 SELECT value_at_risk(r) < 0 FROM (VALUES
     (0.01), (0.02), (0.03), (0.04), (0.05)
@@ -37,5 +38,11 @@ true
 # Empty → NULL
 query I
 SELECT value_at_risk(r) FROM (VALUES (0.01)) AS t(r) WHERE 1=0;
+----
+NULL
+
+# Single value → NULL (need >= 2)
+query I
+SELECT value_at_risk(r) FROM (VALUES (0.01)) AS t(r);
 ----
 NULL
