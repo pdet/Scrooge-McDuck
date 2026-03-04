@@ -1,0 +1,40 @@
+# name: test/sql/scrooge/test_drawdown.test
+# description: Test drawdown_duration and profit_factor
+# group: [scrooge]
+
+require scrooge
+
+# drawdown_duration: 100→80→90→100 = 2 day drawdown
+query I
+SELECT drawdown_duration(close, ts) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0),
+    ('2024-01-02'::TIMESTAMPTZ, 80.0),
+    ('2024-01-03'::TIMESTAMPTZ, 90.0),
+    ('2024-01-04'::TIMESTAMPTZ, 100.0)
+) AS t(ts, close);
+----
+3
+
+# profit_factor: 3 wins of 1.0, 1 loss of -1.0 → PF = 3.0
+query I
+SELECT round(profit_factor(r), 1) FROM (VALUES
+    (1.0), (1.0), (1.0), (-1.0)
+) AS t(r);
+----
+3.0
+
+# profit_factor: equal wins and losses → 1.0
+query I
+SELECT round(profit_factor(r), 1) FROM (VALUES
+    (0.05), (-0.05), (0.03), (-0.03)
+) AS t(r);
+----
+1.0
+
+# profit_factor: no losses → infinity
+query I
+SELECT profit_factor(r) > 1000 FROM (VALUES
+    (1.0), (2.0)
+) AS t(r);
+----
+true
