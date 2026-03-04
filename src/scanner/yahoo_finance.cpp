@@ -1,9 +1,3 @@
-#include "duckdb/common/named_parameter_map.hpp"
-#include "duckdb/execution/operator/csv_scanner/csv_reader_options.hpp"
-#include "duckdb/main/relation/projection_relation.hpp"
-#include "duckdb/main/relation/read_csv_relation.hpp"
-#include "duckdb/parser/expression/constant_expression.hpp"
-#include "duckdb/parser/expression/star_expression.hpp"
 #include "functions/scanner.hpp"
 #include "duckdb/common/helper.hpp"
 
@@ -87,17 +81,19 @@ shared_ptr<Relation> GeneratePlan(YahooFunctionData &bind_data) {
   string url = "https://query2.finance.yahoo.com/v8/finance/chart/" +
                bind_data.symbol + "?period1=" + from + "&period2=" + to +
                "&interval=" + bind_data.interval + "&events=history";
+  // Use explicit column selection to avoid duplicate column names from API response
+  // and handle cases where timestamp key might be nested differently
   string query =
-      "SELECT '" + bind_data.symbol +
-      "'as symbol, list_transform(chart.result[1].timestamp, x -> "
-      "make_timestamp(x*1000000)::date) as date, "
-      "chart.result[1].indicators.quote[1].open as open, "
-      "chart.result[1].indicators.quote[1].high as high, "
-      "chart.result[1].indicators.quote[1].low as low, "
-      "chart.result[1].indicators.quote[1].close as close, "
-      "chart.result[1].indicators.adjclose[1].adjclose as adj_close, "
-      "chart.result[1].indicators.quote[1].volume as volume " +
-      "FROM read_json('" + url + "');";
+      "WITH raw AS (SELECT chart.result[1] AS r FROM read_json('" + url + "')) "
+      "SELECT '" + bind_data.symbol + "' AS symbol, "
+      "list_transform(r.timestamp, x -> make_timestamp(x*1000000)::date) AS date, "
+      "r.indicators.quote[1].open AS open, "
+      "r.indicators.quote[1].high AS high, "
+      "r.indicators.quote[1].low AS low, "
+      "r.indicators.quote[1].close AS close, "
+      "r.indicators.adjclose[1].adjclose AS adj_close, "
+      "r.indicators.quote[1].volume AS volume "
+      "FROM raw WHERE r.timestamp IS NOT NULL;";
   return bind_data.conn->RelationFromQuery(query);
 }
 
