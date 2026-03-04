@@ -1,5 +1,7 @@
 #include "scanner/fred.hpp"
 #include "duckdb/common/helper.hpp"
+#include "duckdb/function/table_function.hpp"
+#include "duckdb/parser/parsed_data/create_table_function_info.hpp"
 
 namespace duckdb {
 namespace scrooge {
@@ -19,7 +21,7 @@ struct FredFunctionData : public TableFunctionData {
 	unique_ptr<QueryResult> result;
 };
 
-unique_ptr<FunctionData> FredScanner::Bind(ClientContext &context, TableFunctionBindInput &input,
+static unique_ptr<FunctionData> FredBind(ClientContext &context, TableFunctionBindInput &input,
                                            vector<LogicalType> &return_types, vector<string> &names) {
 	if (input.inputs[0].type() != LogicalType::VARCHAR) {
 		throw InvalidInputException("series_id must be a VARCHAR");
@@ -64,7 +66,7 @@ unique_ptr<FunctionData> FredScanner::Bind(ClientContext &context, TableFunction
 	return std::move(result);
 }
 
-void FredScanner::Scan(ClientContext &context, TableFunctionInput &data_p, DataChunk &output) {
+static void FredScan(ClientContext &context, TableFunctionInput &data_p, DataChunk &output) {
 	auto &data = (FredFunctionData &)*data_p.bind_data;
 	if (data.done) {
 		return;
@@ -101,6 +103,15 @@ void FredScanner::Scan(ClientContext &context, TableFunctionInput &data_p, DataC
 		return;
 	}
 	output.Move(*result_chunk);
+}
+
+void RegisterFredScanner(Connection &conn, Catalog &catalog) {
+	TableFunctionSet fred_set("fred_series");
+	fred_set.AddFunction(TableFunction({LogicalType::VARCHAR, LogicalType::VARCHAR}, FredScan, FredBind));
+	fred_set.AddFunction(TableFunction({LogicalType::VARCHAR, LogicalType::VARCHAR,
+	                                     LogicalType::VARCHAR, LogicalType::VARCHAR}, FredScan, FredBind));
+	CreateTableFunctionInfo fred_info(fred_set);
+	catalog.CreateFunction(*conn.context, fred_info);
 }
 
 } // namespace scrooge

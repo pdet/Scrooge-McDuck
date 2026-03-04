@@ -18,7 +18,9 @@
 
 ## Current State
 
-### Functions
+### Functions (30+)
+
+#### Core
 | Name | Type | Description |
 |------|------|-------------|
 | `first_s(value, timestamp)` | Aggregate | First value ordered by timestamp |
@@ -26,7 +28,61 @@
 | `timebucket(timestamp, interval)` | Scalar | Bucket timestamps by arbitrary interval |
 | `volatility(value)` | Aggregate (alias) | Alias for `stddev_pop` |
 | `sma(value)` | Aggregate (alias) | Alias for `avg` |
-| `portfolio_frontier(...)` | Table function | Markowitz efficient frontier (commented out, depends on Yahoo scanner) |
+
+#### Technical Indicators ✅
+| Name | Type | Description |
+|------|------|-------------|
+| `ema(close, timestamp, period)` | Aggregate | Exponential Moving Average |
+| `rsi(close, timestamp, period)` | Aggregate | Relative Strength Index |
+| `macd(close, timestamp)` | Aggregate | MACD Line |
+| `bollinger_upper/lower/middle/width(close, timestamp, period, stddev)` | Aggregate | Bollinger Bands |
+| `vwap(price, volume)` | Aggregate | Volume Weighted Average Price |
+| `obv(close, volume, timestamp)` | Aggregate | On-Balance Volume |
+| `atr(high, low, close, timestamp, period)` | Aggregate | Average True Range |
+| `stochastic_k(high, low, close, timestamp, period)` | Aggregate | Stochastic Oscillator %K |
+| `mfi(high, low, close, volume, timestamp, period)` | Aggregate | Money Flow Index |
+| `cmf(high, low, close, volume, timestamp, period)` | Aggregate | Chaikin Money Flow |
+| `ad_line(high, low, close, volume, timestamp)` | Aggregate | Accumulation/Distribution Line |
+
+#### Returns ✅
+| Name | Type | Description |
+|------|------|-------------|
+| `simple_return(close, timestamp)` | Aggregate | Simple return |
+| `log_return(close, timestamp)` | Aggregate | Logarithmic return |
+| `cumulative_return(close, timestamp)` | Aggregate | Cumulative return |
+
+#### Risk Metrics ✅
+| Name | Type | Description |
+|------|------|-------------|
+| `sharpe_ratio(returns, timestamp)` | Aggregate | Sharpe ratio |
+| `sortino_ratio(returns, timestamp)` | Aggregate | Sortino ratio |
+| `max_drawdown(close, timestamp)` | Aggregate | Maximum drawdown |
+| `value_at_risk(returns, timestamp, confidence)` | Aggregate | Value at Risk |
+
+#### Candlestick Patterns ✅
+| Name | Type | Description |
+|------|------|-------------|
+| `is_doji(open, high, low, close)` | Scalar | Doji pattern |
+| `is_hammer(open, high, low, close)` | Scalar | Hammer pattern |
+| `is_shooting_star(open, high, low, close)` | Scalar | Shooting star pattern |
+| `is_engulfing(open, high, low, close, prev_open, prev_close)` | Scalar | Engulfing pattern |
+| `is_morning_star(o1, c1, o2, h2, l2, c2, o3, c3)` | Scalar | Morning star pattern |
+| `is_evening_star(o1, c1, o2, h2, l2, c2, o3, c3)` | Scalar | Evening star pattern |
+
+#### Portfolio Analytics ✅ (PR #47)
+| Name | Type | Description |
+|------|------|-------------|
+| `portfolio_correlation(returns_a, returns_b)` | Aggregate | Pearson correlation |
+| `portfolio_beta(asset_returns, benchmark_returns)` | Aggregate | Systematic risk |
+| `momentum_score(close, timestamp, period_days)` | Aggregate | Rate of change |
+| `relative_strength(asset_close, benchmark_close, timestamp)` | Aggregate | Performance vs benchmark |
+
+#### Scanners
+| Name | Type | Description |
+|------|------|-------------|
+| `yahoo_finance(symbol, from, to, interval)` | Table function | Yahoo Finance OHLCV data |
+| `fred_series(series_id, api_key, start_date, end_date)` | Table function | FRED economic data |
+| `read_eth(url, method, from_block, to_block)` | Table function | Ethereum blockchain scanner |
 
 ### Scanners
 | Name | Description |

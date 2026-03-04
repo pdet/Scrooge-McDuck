@@ -5,7 +5,7 @@
 namespace duckdb {
 namespace scrooge {
 
-void RegisterFredScanner(Connection &conn, Catalog &catalog);
+void RegisterPortfolioFunctions(Connection &conn, Catalog &catalog);
 
 } // namespace scrooge
 } // namespace duckdb
