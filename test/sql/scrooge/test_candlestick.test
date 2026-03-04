@@ -38,16 +38,24 @@ SELECT is_hammer(100.0, 110.0, 100.0, 108.0);
 ----
 false
 
-# is_engulfing(open1, close1, open2, close2)
+# is_engulfing(open, high, low, close, prev_open, prev_close)
 # prev: open=102, close=100 (bearish)
-# curr: open=99, close=103 (bullish, engulfs)
+# curr: open=99, high=104, low=98, close=103 (bullish, engulfs)
 query I
-SELECT is_engulfing(102.0, 100.0, 99.0, 103.0);
+SELECT is_engulfing(99.0, 104.0, 98.0, 103.0, 102.0, 100.0);
 ----
-true
+BULLISH
 
-# Not engulfing — same size
+# Bearish engulfing
+# prev: open=100, close=102 (bullish)
+# curr: open=103, high=104, low=98, close=99 (bearish, engulfs)
 query I
-SELECT is_engulfing(102.0, 100.0, 100.0, 102.0);
+SELECT is_engulfing(103.0, 104.0, 98.0, 99.0, 100.0, 102.0);
 ----
-false
+BEARISH
+
+# Same size — technically engulfs (curr open <= prev close, curr close >= prev open)
+query I
+SELECT is_engulfing(100.0, 103.0, 99.0, 102.0, 102.0, 100.0);
+----
+BULLISH

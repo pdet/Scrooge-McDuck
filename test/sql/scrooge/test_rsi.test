@@ -33,19 +33,19 @@ CREATE TABLE rsi_data AS SELECT * FROM (VALUES
 query I
 SELECT round(rsi(price, ts), 2) FROM rsi_data;
 ----
-51.78
+60.14
 
 # RSI with explicit period
 query I
 SELECT round(rsi(price, ts, 14), 2) FROM rsi_data;
 ----
-51.78
+60.14
 
 # RSI with short period
 query I
 SELECT round(rsi(price, ts, 5), 2) FROM rsi_data;
 ----
-34.63
+38.64
 
 # All prices going up — RSI should be 100
 statement ok

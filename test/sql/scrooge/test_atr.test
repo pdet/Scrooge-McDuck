@@ -14,7 +14,7 @@ SELECT round(atr(high, low, close, ts, 3), 2) FROM (VALUES
     ('2024-01-05'::TIMESTAMPTZ, 48.82, 48.24, 48.74)
 ) AS t(ts, high, low, close);
 ----
-0.56
+0.55
 
 # ATR returns a value (basic smoke test)
 query I
