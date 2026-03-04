@@ -1,3 +1,4 @@
+#include "functions/portfolio.hpp"
 #include "duckdb/function/function_set.hpp"
 #include "duckdb/parser/parsed_data/create_aggregate_function_info.hpp"
 #include "duckdb/execution/expression_executor.hpp"
