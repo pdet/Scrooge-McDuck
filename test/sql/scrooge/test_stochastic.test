@@ -1,0 +1,45 @@
+# name: test/sql/scrooge/test_stochastic.test
+# description: Test Stochastic Oscillator (%K) function
+# group: [scrooge]
+
+require scrooge
+
+# %K = (Close - LowestLow) / (HighestHigh - LowestLow) * 100
+# Period 3: H=[48.90, 48.87, 48.82], L=[48.39, 48.37, 48.24], Close=48.74
+# Highest=48.90, Lowest=48.24 → (48.74-48.24)/(48.90-48.24)*100 = 75.76
+query I
+SELECT round(stochastic_k(high, low, close, ts, 3), 2) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 48.70, 47.79, 48.16),
+    ('2024-01-02'::TIMESTAMPTZ, 48.72, 48.14, 48.61),
+    ('2024-01-03'::TIMESTAMPTZ, 48.90, 48.39, 48.75),
+    ('2024-01-04'::TIMESTAMPTZ, 48.87, 48.37, 48.63),
+    ('2024-01-05'::TIMESTAMPTZ, 48.82, 48.24, 48.74)
+) AS t(ts, high, low, close);
+----
+75.76
+
+# All same price → 100
+query I
+SELECT stochastic_k(high, low, close, ts) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 50.0, 50.0, 50.0),
+    ('2024-01-02'::TIMESTAMPTZ, 50.0, 50.0, 50.0)
+) AS t(ts, high, low, close);
+----
+100.0
+
+# Close at lowest → 0
+query I
+SELECT stochastic_k(high, low, close, ts) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 100.0, 80.0, 90.0),
+    ('2024-01-02'::TIMESTAMPTZ, 100.0, 80.0, 80.0)
+) AS t(ts, high, low, close);
+----
+0.0
+
+# Empty
+query I
+SELECT stochastic_k(high, low, close, ts) FROM (VALUES
+    ('2024-01-01'::TIMESTAMPTZ, 10.0, 9.0, 9.5)
+) AS t(ts, high, low, close) WHERE 1=0;
+----
+NULL
