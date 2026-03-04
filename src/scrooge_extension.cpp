@@ -3,6 +3,7 @@
 #include "scrooge_extension.hpp"
 #include "functions/functions.hpp"
 #include "functions/scanner.hpp"
+#include "scanner/fred.hpp"
 #include "functions/technical.hpp"
 #include "functions/returns.hpp"
 #include "functions/risk.hpp"
@@ -51,6 +52,17 @@ static void LoadInternal(ExtensionLoader &loader) {
 	                            scrooge::YahooScanner::Scan, scrooge::YahooScanner::Bind);
 	CreateTableFunctionInfo yahoo_scanner_info(yahoo_scanner);
 	catalog.CreateTableFunction(*con.context, &yahoo_scanner_info);
+
+	// FRED Economic Data Scanner
+	TableFunctionSet fred_set("fred_series");
+	// 2-arg: fred_series(series_id, api_key)
+	fred_set.AddFunction(TableFunction({LogicalType::VARCHAR, LogicalType::VARCHAR},
+	                                   scrooge::FredScanner::Scan, scrooge::FredScanner::Bind));
+	// 4-arg: fred_series(series_id, api_key, start_date, end_date)
+	fred_set.AddFunction(TableFunction({LogicalType::VARCHAR, LogicalType::VARCHAR, LogicalType::ANY, LogicalType::ANY},
+	                                   scrooge::FredScanner::Scan, scrooge::FredScanner::Bind));
+	CreateTableFunctionInfo fred_scanner_info(fred_set);
+	catalog.CreateTableFunction(*con.context, &fred_scanner_info);
 
 	// Ethereum Scanner
 	TableFunction ethereum_rpc_scanner("read_eth",
