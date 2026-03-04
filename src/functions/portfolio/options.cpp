@@ -6,6 +6,7 @@
 #include "duckdb/main/connection.hpp"
 #include "duckdb/catalog/catalog.hpp"
 #include <cmath>
+#include <functional>
 
 namespace duckdb {
 namespace scrooge {
