@@ -1,4 +1,5 @@
 #include "functions/functions.hpp"
+#include "duckdb/parser/parsed_data/create_aggregate_function_info.hpp"
 #include "duckdb/catalog/catalog_entry/aggregate_function_catalog_entry.hpp"
 #include "duckdb/common/helper.hpp"
 
