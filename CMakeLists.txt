@@ -56,6 +56,7 @@ set(EXTENSION_SOURCES
     src/functions/portfolio/options.cpp
     src/functions/technical/wma.cpp
     src/functions/technical/dema.cpp
+    src/functions/portfolio/rolling.cpp
     src/scanner/coingecko.cpp)
 
 build_static_extension(${TARGET_NAME} ${EXTENSION_SOURCES})

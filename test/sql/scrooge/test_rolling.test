@@ -1,0 +1,45 @@
+# name: test/sql/scrooge/test_rolling.test
+# description: Test win_rate, avg_win_loss_ratio, expectancy
+# group: [scrooge]
+
+require scrooge
+
+# win_rate: 3 wins out of 5
+query I
+SELECT round(win_rate(r), 2) FROM (VALUES
+    (0.05), (-0.03), (0.02), (-0.01), (0.04)
+) AS t(r);
+----
+0.6
+
+# win_rate: all wins
+query I
+SELECT round(win_rate(r), 1) FROM (VALUES
+    (0.01), (0.02), (0.03)
+) AS t(r);
+----
+1.0
+
+# avg_win_loss_ratio: avg win = 0.05, avg loss = 0.02 → 2.5
+query I
+SELECT round(avg_win_loss_ratio(r), 1) FROM (VALUES
+    (0.05), (-0.02), (0.05), (-0.02)
+) AS t(r);
+----
+2.5
+
+# expectancy: positive system
+query I
+SELECT expectancy(r) > 0 FROM (VALUES
+    (0.10), (-0.02), (0.08), (-0.03), (0.12)
+) AS t(r);
+----
+true
+
+# expectancy: losing system
+query I
+SELECT expectancy(r) < 0 FROM (VALUES
+    (0.01), (-0.10), (0.02), (-0.08), (0.01), (-0.09)
+) AS t(r);
+----
+true
