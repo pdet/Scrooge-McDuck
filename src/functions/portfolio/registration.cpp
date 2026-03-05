@@ -9,6 +9,7 @@ void RegisterSignalFunctions(Connection &conn, Catalog &catalog);
 void RegisterCompositeFunctions(Connection &conn, Catalog &catalog);
 void RegisterDrawdownFunctions(Connection &conn, Catalog &catalog);
 void RegisterVolatilityFunctions(Connection &conn, Catalog &catalog);
+void RegisterRollingFunctions(Connection &conn, Catalog &catalog);
 
 void RegisterPortfolioFunctions(Connection &conn, Catalog &catalog) {
 	RegisterCorrelationFunctions(conn, catalog);
@@ -17,6 +18,7 @@ void RegisterPortfolioFunctions(Connection &conn, Catalog &catalog) {
 	RegisterCompositeFunctions(conn, catalog);
 	RegisterDrawdownFunctions(conn, catalog);
 	RegisterVolatilityFunctions(conn, catalog);
+	RegisterRollingFunctions(conn, catalog);
 }
 
 } // namespace scrooge
