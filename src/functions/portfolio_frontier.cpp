@@ -6,6 +6,7 @@
 #include "duckdb/main/relation/projection_relation.hpp"
 #include "duckdb/parser/expression/star_expression.hpp"
 #include "duckdb/parser/expression/constant_expression.hpp"
+#include "duckdb/parser/expression/columnref_expression.hpp"
 #include "duckdb/main/relation/aggregate_relation.hpp"
 #include "duckdb/parser/expression/function_expression.hpp"
 #include "duckdb/common/helper.hpp"
