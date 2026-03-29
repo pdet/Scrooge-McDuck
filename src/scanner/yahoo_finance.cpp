@@ -86,7 +86,7 @@ shared_ptr<Relation> GeneratePlan(YahooFunctionData &bind_data) {
   string query =
       "WITH raw AS (SELECT chart.result[1] AS r FROM read_json('" + url + "')) "
       "SELECT '" + bind_data.symbol + "' AS symbol, "
-      "list_transform(r.timestamp, x -> to_timestamp(x)::date) AS date, "
+      "list_transform(r.timestamp, x -> to_timestamp(x)::timestamp::date) AS date, "
       "r.indicators.quote[1].open AS open, "
       "r.indicators.quote[1].high AS high, "
       "r.indicators.quote[1].low AS low, "
