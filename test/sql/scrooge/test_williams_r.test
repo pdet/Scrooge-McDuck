@@ -1,0 +1,30 @@
+# name: test/sql/scrooge/test_williams_r.test
+# description: Test Williams %R
+# group: [scrooge]
+
+require scrooge
+
+statement ok
+CREATE TABLE bars AS
+SELECT '2024-01-01'::TIMESTAMP + (INTERVAL 1 DAY) * (i - 1) AS ts,
+       100.0 + i AS high, 90.0 + i AS low, 95.0 + i AS close
+FROM range(1, 16) t(i);
+
+# %R is in the [-100, 0] range.
+query I
+SELECT williams_r(high, low, close, ts) BETWEEN -100 AND 0 FROM bars;
+----
+true
+
+# When close = highest_high, %R = 0.
+statement ok
+CREATE TABLE atop AS
+SELECT '2024-01-01'::TIMESTAMP + (INTERVAL 1 DAY) * i AS ts,
+       100.0 AS high, 90.0 AS low,
+       CASE WHEN i = 9 THEN 100.0 ELSE 95.0 END AS close
+FROM range(0, 10) t(i);
+
+query I
+SELECT abs(williams_r(high, low, close, ts)) < 1e-9 FROM atop;
+----
+true

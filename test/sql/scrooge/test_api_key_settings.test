@@ -1,0 +1,44 @@
+# name: test/sql/scrooge/test_api_key_settings.test
+# description: Test fred_api_key / polygon_api_key settings + binding behaviour
+# group: [scrooge]
+
+require scrooge
+
+# Default values are empty.
+query I
+SELECT current_setting('fred_api_key') = '';
+----
+true
+
+query I
+SELECT current_setting('polygon_api_key') = '';
+----
+true
+
+# Calling fred_series with no key + empty setting → InvalidInputException.
+statement error
+SELECT * FROM fred_series('GDP') LIMIT 0;
+----
+
+# Calling polygon_aggs with no key + empty setting → InvalidInputException.
+statement error
+SELECT * FROM polygon_aggs('AAPL', 1, 'day', '2024-01-01', '2024-01-31') LIMIT 0;
+----
+
+# Once the setting is configured, binding succeeds (it doesn't actually
+# fetch unless the scan runs). LIMIT 0 short-circuits the network call.
+statement ok
+SET fred_api_key = 'test_placeholder';
+
+statement ok
+SELECT * FROM fred_series('GDP') LIMIT 0;
+
+statement ok
+SET polygon_api_key = 'test_placeholder';
+
+statement ok
+SELECT * FROM polygon_aggs('AAPL', 1, 'day', '2024-01-01', '2024-01-31') LIMIT 0;
+
+# Empty string for api_key in the explicit form falls back to the setting.
+statement ok
+SELECT * FROM fred_series('GDP', '') LIMIT 0;

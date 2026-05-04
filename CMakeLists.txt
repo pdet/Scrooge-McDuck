@@ -57,7 +57,30 @@ set(EXTENSION_SOURCES
     src/functions/technical/wma.cpp
     src/functions/technical/dema.cpp
     src/functions/portfolio/rolling.cpp
-    src/scanner/coingecko.cpp)
+    src/scanner/coingecko.cpp
+    # Tier 1: quant tooling
+    src/functions/quant/monte_carlo.cpp
+    src/functions/quant/portfolio_opt.cpp
+    src/functions/quant/backtest.cpp
+    src/scanner/sec_edgar.cpp
+    # Tier 2: indicators
+    src/functions/technical/williams.cpp
+    src/functions/technical/adx.cpp
+    src/functions/technical/heikin_ashi.cpp
+    src/functions/technical/ichimoku.cpp
+    src/functions/technical/keltner.cpp
+    # Tier 2: quant
+    src/functions/quant/fixed_income.cpp
+    src/functions/quant/american_options.cpp
+    src/functions/quant/timeseries_stats.cpp
+    # Tier 2: scanners
+    src/scanner/polygon.cpp
+    src/scanner/binance.cpp
+    # Tier 3: SQL macros
+    src/functions/macros.cpp
+    # Tier 4: generic JSON-RPC + Alpha Vantage news
+    src/scanner/json_rpc.cpp
+    src/scanner/alpha_vantage_news.cpp)
 
 build_static_extension(${TARGET_NAME} ${EXTENSION_SOURCES})
 build_loadable_extension(${TARGET_NAME} " " ${EXTENSION_SOURCES})

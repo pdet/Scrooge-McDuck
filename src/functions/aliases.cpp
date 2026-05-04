@@ -6,28 +6,29 @@
 namespace duckdb {
 
 namespace scrooge {
-void Aliases::Register(Connection &conn, Catalog &catalog) {
-  // Register Volatility
-  auto &stddev =
-      catalog
-          .GetEntry(*conn.context, CatalogType::AGGREGATE_FUNCTION_ENTRY,
-                    DEFAULT_SCHEMA, "stddev_pop")
-          .Cast<AggregateFunctionCatalogEntry>();
-  auto volatility = stddev.functions;
-  volatility.name = "volatility";
-  CreateAggregateFunctionInfo volatility_info(volatility);
-  catalog.CreateFunction(*conn.context, volatility_info);
 
-  // Register SMA
-  auto &avg =
-      catalog
-          .GetEntry(*conn.context, CatalogType::AGGREGATE_FUNCTION_ENTRY,
-                    DEFAULT_SCHEMA, "avg")
-          .Cast<AggregateFunctionCatalogEntry>();
-  auto sma = avg.functions;
-  sma.name = "sma";
-  CreateAggregateFunctionInfo sma_info(sma);
-  catalog.CreateFunction(*conn.context, sma_info);
+// Aliases for builtin core_functions aggregates. We register these only
+// if the underlying functions are already in the catalog — otherwise a
+// scrooge load that races ahead of core_functions throws CatalogError.
+static void RegisterAlias(Connection &conn, Catalog &catalog,
+                            const string &source, const string &alias) {
+	try {
+		auto &entry = catalog.GetEntry(*conn.context, CatalogType::AGGREGATE_FUNCTION_ENTRY,
+		                                 DEFAULT_SCHEMA, source).Cast<AggregateFunctionCatalogEntry>();
+		auto fns = entry.functions;
+		fns.name = alias;
+		CreateAggregateFunctionInfo info(fns);
+		catalog.CreateFunction(*conn.context, info);
+	} catch (...) {
+		// core_functions not yet loaded — skip silently. The user can
+		// reload scrooge after `LOAD core_functions` to pick up the alias.
+	}
 }
+
+void Aliases::Register(Connection &conn, Catalog &catalog) {
+	RegisterAlias(conn, catalog, "stddev_pop", "volatility");
+	RegisterAlias(conn, catalog, "avg", "sma");
+}
+
 } // namespace scrooge
 } // namespace duckdb

@@ -1,0 +1,33 @@
+# name: test/sql/scrooge/test_adx.test
+# description: Test ADX / +DI / -DI
+# group: [scrooge]
+
+require scrooge
+
+# Strongly trending series (consistent up-moves).
+statement ok
+CREATE TABLE up AS
+SELECT '2024-01-01'::TIMESTAMP + (INTERVAL 1 DAY) * (i - 1) AS ts,
+       100.0 + i * 1.5 AS high,
+       99.0 + i * 1.5 AS low,
+       99.5 + i * 1.5 AS close
+FROM range(1, 41) t(i);
+
+# +DI > -DI for an uptrend.
+query I
+SELECT plus_di(high, low, close, ts, 14) > minus_di(high, low, close, ts, 14)
+FROM up;
+----
+true
+
+# ADX is in (0, 100].
+query I
+SELECT adx(high, low, close, ts, 14) BETWEEN 0 AND 100 FROM up;
+----
+true
+
+# Strong trend → ADX > 25.
+query I
+SELECT adx(high, low, close, ts, 14) > 25 FROM up;
+----
+true

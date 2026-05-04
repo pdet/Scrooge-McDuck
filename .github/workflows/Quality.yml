@@ -1,0 +1,50 @@
+name: Quality
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  clang-format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: sudo apt-get update && sudo apt-get install -y clang-format-17
+
+      # Style is advisory: report drift but do not fail the build until the
+      # tree has been bulk-formatted. To enforce, change `--Werror` warnings
+      # to a hard failure step.
+      - name: Check formatting (advisory)
+        run: |
+          DIFFS=$(find src -name '*.cpp' -o -name '*.hpp' \
+            | xargs clang-format-17 --dry-run 2>&1 | tee clang-format.log | wc -l)
+          echo "clang-format reported $DIFFS lines of warnings"
+          if [ "$DIFFS" -gt 0 ]; then
+            echo "::warning::run clang-format-17 -i src/**/*.{cpp,hpp} to fix"
+          fi
+
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install build deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build cmake libssl-dev python3 python3-pip
+          pip3 install pandas
+
+      - name: Build extension
+        run: GEN=ninja make
+        timeout-minutes: 60
+
+      - name: Run scrooge tests
+        run: ./build/release/test/unittest "test/sql/scrooge/*"
+
+      - name: Run validation harness
+        run: python3 scripts/validate/validate_indicators.py

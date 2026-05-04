@@ -1,0 +1,83 @@
+# name: test/sql/scrooge/test_macros.test
+# description: Test built-in SQL macros
+# group: [scrooge]
+
+require scrooge
+
+# Scalar macros.
+query I
+SELECT pct_change(110.0, 100.0);
+----
+0.1
+
+query I
+SELECT pct_change(100.0, 0);
+----
+NULL
+
+query I
+SELECT safe_div(1.0, 0);
+----
+NULL
+
+query I
+SELECT clip(15, 0, 10);
+----
+10
+
+query I
+SELECT clip(-5, 0, 10);
+----
+0
+
+query I
+SELECT zscore(10.0, 5.0, 2.0);
+----
+2.5
+
+query I
+SELECT pct_to_bps(0.025);
+----
+250.0
+
+query I
+SELECT bps_to_pct(250.0);
+----
+0.025
+
+# Table macro: with_returns.
+statement ok
+CREATE TABLE px AS
+SELECT '2024-01-01'::TIMESTAMP + (INTERVAL 1 DAY) * (i - 1) AS ts,
+       100.0 + i * 1.0 AS price
+FROM range(1, 6) t(i);
+
+query III
+SELECT ts::DATE, price, round(simple_return, 6)
+FROM with_returns('px')
+ORDER BY ts;
+----
+2024-01-01	101.0	NULL
+2024-01-02	102.0	0.009901
+2024-01-03	103.0	0.009804
+2024-01-04	104.0	0.009709
+2024-01-05	105.0	0.009615
+
+# Table macro: resample_ohlc.
+statement ok
+CREATE TABLE bars AS
+SELECT '2024-01-01'::TIMESTAMP + (INTERVAL 1 HOUR) * (i - 1) AS ts,
+       100.0 + i AS open, 105.0 + i AS high, 95.0 + i AS low, 102.0 + i AS close,
+       1000.0 * i AS volume
+FROM range(1, 25) t(i);
+
+# Resample 24 hourly bars into 1 daily bar.
+query I
+SELECT count(*) FROM resample_ohlc('bars', '1 day');
+----
+1
+
+query III
+SELECT round(open, 1), round(close, 1), volume FROM resample_ohlc('bars', '1 day');
+----
+101.0	126.0	300000.0

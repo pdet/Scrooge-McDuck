@@ -1,0 +1,15 @@
+# name: test/sql/scrooge/test_polygon_binance.test
+# description: Bind/schema test for Polygon and Binance scanners.
+#              Live calls are gated behind SCROOGE_NETWORK_TESTS.
+# group: [scrooge]
+
+require scrooge
+
+require httpfs
+
+# Binding-only: ensure the table function is registered with the right schema.
+statement ok
+SELECT * FROM binance_klines('BTCUSDT', '1d', 5) LIMIT 0;
+
+statement ok
+SELECT * FROM polygon_aggs('AAPL', 1, 'day', '2024-01-01', '2024-01-31', 'PLACEHOLDER') LIMIT 0;

@@ -1,0 +1,36 @@
+# name: test/sql/scrooge/test_bond.test
+# description: Test fixed-income functions
+# group: [scrooge]
+
+require scrooge
+
+# Par bond: ytm = coupon → price = face.
+query I
+SELECT abs(bond_price(1000.0, 0.05, 0.05, 10, 2.0) - 1000.0) < 1e-6;
+----
+true
+
+# Round trip: price → YTM recovers original ytm.
+query I
+SELECT abs(bond_ytm(bond_price(1000.0, 0.05, 0.04, 20, 2.0), 1000.0, 0.05, 20, 2.0) - 0.04) < 1e-6;
+----
+true
+
+# Lower YTM → higher price.
+query I
+SELECT bond_price(1000.0, 0.05, 0.03, 20, 2.0) > bond_price(1000.0, 0.05, 0.07, 20, 2.0);
+----
+true
+
+# Modified duration < Macaulay duration when ytm > 0.
+query I
+SELECT bond_modified_duration(1000.0, 0.05, 0.05, 20, 2.0) <
+       bond_macaulay_duration(1000.0, 0.05, 0.05, 20, 2.0);
+----
+true
+
+# Convexity is positive for plain coupon bonds.
+query I
+SELECT bond_convexity(1000.0, 0.05, 0.05, 20, 2.0) > 0;
+----
+true

@@ -1,0 +1,80 @@
+# name: test/sql/scrooge/test_backtest.test
+# description: Test backtest table functions
+# group: [scrooge]
+
+require scrooge
+
+# Build a simple price series with one buy/sell cycle.
+statement ok
+CREATE TABLE bars AS
+SELECT '2024-01-01'::TIMESTAMP + (INTERVAL 1 DAY) * (i - 1) AS ts,
+       100.0 + i * 1.0 AS price,
+       CASE WHEN i = 1 THEN 'BUY'
+            WHEN i = 5 THEN 'SELL'
+            ELSE 'HOLD' END AS signal
+FROM range(1, 11) t(i);
+
+# Equity has one row per bar
+query I
+SELECT count(*) FROM backtest_equity('FROM bars', 10000.0);
+----
+10
+
+# At entry bar, position > 0 and cash < initial
+query I
+SELECT (position > 0 AND cash < 10000.0) FROM backtest_equity('FROM bars', 10000.0)
+WHERE ts = '2024-01-01'::TIMESTAMP;
+----
+true
+
+# After SELL, position is back to 0
+query I
+SELECT count(*) FILTER (WHERE position = 0)
+FROM backtest_equity('FROM bars', 10000.0)
+WHERE ts >= '2024-01-05'::TIMESTAMP;
+----
+6
+
+# One trade was executed
+query I
+SELECT count(*) FROM backtest_trades('FROM bars', 10000.0);
+----
+1
+
+# Trade is profitable (entry at 101, exit at 105 → ~4% return, no costs)
+query I
+SELECT (return > 0.03 AND return < 0.05) FROM backtest_trades('FROM bars', 10000.0);
+----
+true
+
+# With commission, the same trade earns less
+query I
+SELECT (a.return > b.return)
+FROM (SELECT return FROM backtest_trades('FROM bars', 10000.0)) a,
+     (SELECT return FROM backtest_trades('FROM bars', 10000.0, 0.01)) b;
+----
+true
+
+# Stats includes a known set of metrics
+query I
+SELECT count(*) FROM backtest_stats('FROM bars', 10000.0)
+WHERE metric IN ('initial_capital', 'final_equity', 'total_return',
+                 'cagr', 'sharpe_ratio', 'max_drawdown', 'num_trades',
+                 'win_rate', 'profit_factor');
+----
+9
+
+# Initial capital is reported back
+query I
+SELECT value FROM backtest_stats('FROM bars', 10000.0) WHERE metric = 'initial_capital';
+----
+10000.0
+
+# Errors
+statement error
+SELECT * FROM backtest_equity('SELECT 1 AS ts, 1.0 AS price, NULL AS signal WHERE false', 10000.0);
+----
+
+statement error
+SELECT * FROM backtest_equity('FROM bars', -1.0);
+----

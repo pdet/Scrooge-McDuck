@@ -1,0 +1,29 @@
+# name: test/sql/scrooge/test_heikin_ashi.test
+# description: Test Heikin-Ashi candles
+# group: [scrooge]
+
+require scrooge
+
+statement ok
+CREATE TABLE bars AS
+SELECT '2024-01-01'::TIMESTAMP + (INTERVAL 1 DAY) * (i - 1) AS ts,
+       100.0 + i AS o,
+       102.0 + i AS h,
+       99.0 + i AS l,
+       101.0 + i AS c
+FROM range(1, 11) t(i);
+
+# ha_close = (o+h+l+c)/4 of the *last* bar.
+# Last bar (i=10): o=110, h=112, l=109, c=111 → 110.5
+query I
+SELECT ha_close(o, h, l, c, ts) FROM bars;
+----
+110.5
+
+# ha_high >= ha_close, ha_low <= ha_close.
+query I
+SELECT ha_high(o, h, l, c, ts) >= ha_close(o, h, l, c, ts) AND
+       ha_low(o, h, l, c, ts) <= ha_close(o, h, l, c, ts)
+FROM bars;
+----
+true

@@ -1,0 +1,22 @@
+# name: test/sql/scrooge/test_json_rpc.test
+# description: Bind/schema test for json_rpc scanner. Live calls are
+#              gated behind SCROOGE_NETWORK_TESTS.
+# group: [scrooge]
+
+require scrooge
+
+# Schema check via LIMIT 0 (does not actually fire the request).
+statement ok
+SELECT * FROM json_rpc('http://127.0.0.1:0/', 'eth_blockNumber') LIMIT 0;
+
+# Bad params JSON should fail at bind time.
+statement error
+SELECT * FROM json_rpc('http://127.0.0.1:0/', 'eth_blockNumber', '{not json}') LIMIT 0;
+----
+
+# Output schema is fixed.
+query IIIIIIII
+SELECT typeof(jsonrpc), typeof(id), typeof(result), typeof(error),
+       NULL, NULL, NULL, NULL
+FROM json_rpc('http://127.0.0.1:0/', 'eth_blockNumber') LIMIT 0;
+----

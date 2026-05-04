@@ -1,0 +1,31 @@
+# name: test/sql/scrooge/test_alpha_vantage_news.test
+# description: Test alpha_vantage_news scanner setting + bind behaviour
+# group: [scrooge]
+
+require scrooge
+
+# Default value of the setting is empty.
+query I
+SELECT current_setting('alpha_vantage_api_key') = '';
+----
+true
+
+# Without a key, calling the function fails at bind.
+statement error
+SELECT * FROM alpha_vantage_news('AAPL') LIMIT 0;
+----
+
+# Once configured, bind succeeds (LIMIT 0 short-circuits the network call).
+statement ok
+SET alpha_vantage_api_key = 'demo';
+
+statement ok
+SELECT * FROM alpha_vantage_news('AAPL') LIMIT 0;
+
+# Schema check.
+query IIIIIIII
+SELECT typeof(time_published), typeof(title), typeof(url), typeof(source),
+       typeof(summary), typeof(overall_sentiment_score),
+       typeof(overall_sentiment_label), typeof(tickers)
+FROM alpha_vantage_news('AAPL') LIMIT 0;
+----

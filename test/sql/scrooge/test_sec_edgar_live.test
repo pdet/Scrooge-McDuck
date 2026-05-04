@@ -1,0 +1,38 @@
+# name: test/sql/scrooge/test_sec_edgar_live.test
+# description: SEC EDGAR live integration test.
+#              Gated behind SCROOGE_NETWORK_TESTS so CI without network does not fail.
+# group: [scrooge]
+
+require scrooge
+
+require-env SCROOGE_NETWORK_TESTS
+
+# Filings: at least one 10-K is on file for AAPL.
+query I
+SELECT count(*) > 0 FROM sec_filings('AAPL', '10-K', 5);
+----
+true
+
+# Filings: schema check.
+query IIIIII
+SELECT typeof(accession_number), typeof(filing_date), typeof(report_date),
+       typeof(form), typeof(primary_document), typeof(url)
+FROM sec_filings('AAPL', '10-K', 1);
+----
+VARCHAR	DATE	DATE	VARCHAR	VARCHAR	VARCHAR
+
+# Facts: revenues exist, in USD, with at least one annual report.
+query I
+SELECT count(*) > 0
+FROM sec_facts('AAPL', 'Revenues')
+WHERE unit = 'USD' AND form = '10-K';
+----
+true
+
+# Facts: by raw CIK works too.
+query I
+SELECT count(*) > 0
+FROM sec_facts('320193', 'Assets')
+WHERE unit = 'USD';
+----
+true

@@ -33,7 +33,8 @@ namespace scrooge {
 // bs_implied_vol(option_price, S, K, T, r, is_call) → implied vol
 // ──────────────────────────────────────────────────────────────
 
-// Standard normal CDF (Abramowitz & Stegun approximation)
+// Standard normal CDF via A&S 7.1.26 erf approximation:
+//   NormCDF(x) = 0.5 * (1 + erf(x / sqrt(2)))
 static double NormCDF(double x) {
 	if (x > 6.0) return 1.0;
 	if (x < -6.0) return 0.0;
@@ -41,10 +42,10 @@ static double NormCDF(double x) {
 	static const double a3 = 1.421413741, a4 = -1.453152027;
 	static const double a5 = 1.061405429, p = 0.3275911;
 	int sign = (x < 0) ? -1 : 1;
-	x = std::fabs(x);
-	double t = 1.0 / (1.0 + p * x);
-	double y = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * std::exp(-x * x / 2.0);
-	return 0.5 * (1.0 + sign * y);
+	double z = std::fabs(x) / std::sqrt(2.0);
+	double t = 1.0 / (1.0 + p * z);
+	double erf_val = 1.0 - (((((a5 * t + a4) * t) + a3) * t + a2) * t + a1) * t * std::exp(-z * z);
+	return 0.5 * (1.0 + sign * erf_val);
 }
 
 // Standard normal PDF

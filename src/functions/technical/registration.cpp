@@ -16,6 +16,11 @@ void RegisterMfiFunction(Connection &conn, Catalog &catalog);
 void RegisterCmfFunction(Connection &conn, Catalog &catalog);
 void RegisterWMAAndPivotFunctions(Connection &conn, Catalog &catalog);
 void RegisterDEMAFunctions(Connection &conn, Catalog &catalog);
+void RegisterWilliamsR(Connection &conn, Catalog &catalog);
+void RegisterADX(Connection &conn, Catalog &catalog);
+void RegisterHeikinAshi(Connection &conn, Catalog &catalog);
+void RegisterIchimoku(Connection &conn, Catalog &catalog);
+void RegisterKeltner(Connection &conn, Catalog &catalog);
 
 void RegisterTechnicalFunctions(Connection &conn, Catalog &catalog) {
 	RegisterEmaFunction(conn, catalog);
@@ -30,6 +35,11 @@ void RegisterTechnicalFunctions(Connection &conn, Catalog &catalog) {
 	RegisterCmfFunction(conn, catalog);
 	RegisterWMAAndPivotFunctions(conn, catalog);
 	RegisterDEMAFunctions(conn, catalog);
+	RegisterWilliamsR(conn, catalog);
+	RegisterADX(conn, catalog);
+	RegisterHeikinAshi(conn, catalog);
+	RegisterIchimoku(conn, catalog);
+	RegisterKeltner(conn, catalog);
 }
 
 } // namespace scrooge

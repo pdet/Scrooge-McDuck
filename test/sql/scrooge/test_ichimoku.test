@@ -1,0 +1,35 @@
+# name: test/sql/scrooge/test_ichimoku.test
+# description: Test Ichimoku Cloud lines
+# group: [scrooge]
+
+require scrooge
+
+statement ok
+CREATE TABLE bars AS
+SELECT '2024-01-01'::TIMESTAMP + (INTERVAL 1 DAY) * (i - 1) AS ts,
+       100.0 + i AS h,
+       90.0 + i AS l
+FROM range(1, 61) t(i);
+
+# senkou_a = (tenkan + kijun) / 2 by definition.
+query I
+SELECT abs(ichimoku_senkou_a(h, l, ts) -
+           (ichimoku_tenkan(h, l, ts) + ichimoku_kijun(h, l, ts)) / 2.0) < 1e-9
+FROM bars;
+----
+true
+
+# All four lines fall between the rolling lowest low and highest high.
+query I
+SELECT count(*) FILTER (WHERE val BETWEEN min_l AND max_h) = 4
+FROM (
+  SELECT ichimoku_tenkan(h, l, ts) AS val, min(l) AS min_l, max(h) AS max_h FROM bars
+  UNION ALL
+  SELECT ichimoku_kijun(h, l, ts), min(l), max(h) FROM bars
+  UNION ALL
+  SELECT ichimoku_senkou_a(h, l, ts), min(l), max(h) FROM bars
+  UNION ALL
+  SELECT ichimoku_senkou_b(h, l, ts), min(l), max(h) FROM bars
+);
+----
+true

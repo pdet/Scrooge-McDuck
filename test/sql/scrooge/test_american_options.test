@@ -1,0 +1,38 @@
+# name: test/sql/scrooge/test_american_options.test
+# description: Test American option pricing (CRR binomial)
+# group: [scrooge]
+
+require scrooge
+
+# At-the-money call: known reference value ≈ 10.45 (Hull 9th ed., S=K=100, T=1, r=0.05, σ=0.20).
+query I
+SELECT abs(am_call(100.0, 100.0, 1.0, 0.05, 0.20, 500) - 10.45) < 0.1;
+----
+true
+
+# At-the-money put: known reference value ≈ 6.09 for European; American slightly higher.
+query I
+SELECT am_put(100.0, 100.0, 1.0, 0.05, 0.20, 500) > 5.0 AND
+       am_put(100.0, 100.0, 1.0, 0.05, 0.20, 500) < 8.0;
+----
+true
+
+# Deep-ITM American put ≈ intrinsic value (K - S).
+query I
+SELECT am_put(50.0, 100.0, 1.0, 0.05, 0.20, 500) >= 50.0 - 1e-6;
+----
+true
+
+# Calls with longer maturity ≥ shorter maturity (American).
+query I
+SELECT am_call(100.0, 100.0, 2.0, 0.05, 0.20, 200) >=
+       am_call(100.0, 100.0, 1.0, 0.05, 0.20, 200);
+----
+true
+
+# Higher volatility → higher option value.
+query I
+SELECT am_call(100.0, 100.0, 1.0, 0.05, 0.40, 200) >
+       am_call(100.0, 100.0, 1.0, 0.05, 0.20, 200);
+----
+true

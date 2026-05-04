@@ -1,0 +1,68 @@
+# name: test/sql/scrooge/test_portfolio_opt.test
+# description: Test portfolio optimization (min variance, max Sharpe, efficient frontier)
+# group: [scrooge]
+
+require scrooge
+
+# Build a small returns table: 2 uncorrelated assets, A higher mean, B lower vol.
+statement ok
+CREATE TABLE rets AS
+SELECT 'A' AS symbol, r AS return FROM (VALUES (0.02), (0.03), (-0.01), (0.04), (0.01), (0.02), (-0.005), (0.03)) v(r)
+UNION ALL
+SELECT 'B', r FROM (VALUES (0.005), (0.006), (0.004), (0.005), (0.007), (0.005), (0.004), (0.006)) v(r);
+
+# min_variance_portfolio: weights sum to 1
+query I
+SELECT abs(sum(weight) - 1.0) < 1e-9 FROM min_variance_portfolio('FROM rets');
+----
+true
+
+# min_variance: B (the low-vol asset) should get more weight than A
+query I
+SELECT (SELECT weight FROM min_variance_portfolio('FROM rets') WHERE symbol = 'B') >
+       (SELECT weight FROM min_variance_portfolio('FROM rets') WHERE symbol = 'A');
+----
+true
+
+# max_sharpe_portfolio: weights sum to 1
+query I
+SELECT abs(sum(weight) - 1.0) < 1e-9 FROM max_sharpe_portfolio('FROM rets');
+----
+true
+
+# efficient_frontier: returns num_points * num_symbols rows
+query I
+SELECT count(*) FROM efficient_frontier('FROM rets', 5);
+----
+10
+
+# All weights at each point sum to 1
+query I
+SELECT count(*) FILTER (WHERE abs(s - 1.0) > 1e-6) = 0
+FROM (SELECT point_id, sum(weight) AS s FROM efficient_frontier('FROM rets', 5) GROUP BY point_id);
+----
+true
+
+# Sharpe ratio is well-defined and finite at each point
+query I
+SELECT count(*) FILTER (WHERE volatility > 0)
+FROM (SELECT DISTINCT point_id, volatility FROM efficient_frontier('FROM rets', 5));
+----
+5
+
+# Errors: not enough symbols
+statement ok
+CREATE TABLE one_sym AS SELECT 'X' AS symbol, 0.01 AS return UNION ALL SELECT 'X', 0.02;
+
+statement error
+SELECT * FROM min_variance_portfolio('FROM one_sym');
+----
+
+# Errors: mismatched observations per symbol
+statement ok
+CREATE TABLE bad AS SELECT 'A' AS symbol, 0.01 AS return UNION ALL SELECT 'A', 0.02
+                    UNION ALL SELECT 'B', 0.01;
+
+statement error
+SELECT * FROM min_variance_portfolio('FROM bad');
+----

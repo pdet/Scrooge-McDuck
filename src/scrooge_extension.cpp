@@ -9,7 +9,11 @@
 #include "functions/risk.hpp"
 #include "functions/candlestick.hpp"
 #include "functions/portfolio.hpp"
+#include "functions/quant.hpp"
+#include "functions/macros.hpp"
 #include "scanner/coingecko.hpp"
+#include "scanner/sec_edgar.hpp"
+#include "scanner/extra_scanners.hpp"
 #include "duckdb.hpp"
 #include "duckdb/function/table_function.hpp"
 #include "duckdb/main/client_context.hpp"
@@ -66,6 +70,30 @@ static void LoadInternal(ExtensionLoader &loader) {
 
 	// Options pricing (Black-Scholes)
 	scrooge::RegisterOptionsFunctions(con, catalog);
+
+	// Tier 1: quant tooling
+	scrooge::RegisterMonteCarlo(con, catalog);
+	scrooge::RegisterPortfolioOptimization(con, catalog);
+	scrooge::RegisterBacktest(con, catalog);
+
+	// SEC EDGAR (filings + XBRL fundamentals)
+	scrooge::RegisterSecEdgarScanner(con, catalog);
+
+	// Tier 2: fixed income, American options, time-series stats
+	scrooge::RegisterFixedIncome(con, catalog);
+	scrooge::RegisterAmericanOptions(con, catalog);
+	scrooge::RegisterTimeSeriesStats(con, catalog);
+
+	// Tier 2: Polygon + Binance scanners
+	scrooge::RegisterPolygonScanner(con, catalog);
+	scrooge::RegisterBinanceScanner(con, catalog);
+
+	// Tier 4: generic JSON-RPC + Alpha Vantage news
+	scrooge::RegisterJsonRpcScanner(con, catalog);
+	scrooge::RegisterAlphaVantageNewsScanner(con, catalog);
+
+	// Tier 3: SQL macros (must come after function registration so MACRO bodies resolve)
+	scrooge::RegisterScroogeMacros(con);
 
 	// Ethereum Scanner
 	TableFunction ethereum_rpc_scanner("read_eth",

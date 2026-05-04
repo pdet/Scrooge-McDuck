@@ -1,0 +1,52 @@
+# name: test/sql/scrooge/test_monte_carlo.test
+# description: Test monte_carlo GBM simulation
+# group: [scrooge]
+
+require scrooge
+
+# Cardinality: 5 paths * (horizon + 1) days = 30 rows
+query I
+SELECT count(*) FROM monte_carlo(100.0, 0.05, 0.20, 5, 5, 42);
+----
+30
+
+# All paths start at the start price (day = 0)
+query I
+SELECT count(*) FILTER (WHERE day = 0 AND price = 100.0)
+FROM monte_carlo(100.0, 0.05, 0.20, 5, 5, 42);
+----
+5
+
+# Each path has horizon+1 distinct days
+query I
+SELECT max(day) FROM monte_carlo(100.0, 0.05, 0.20, 10, 3, 42);
+----
+10
+
+# Determinism with seed: identical seed → identical first non-zero price
+query I
+SELECT (a.price = b.price)
+FROM (SELECT price FROM monte_carlo(100.0, 0.05, 0.20, 1, 1, 42) WHERE day = 1) a,
+     (SELECT price FROM monte_carlo(100.0, 0.05, 0.20, 1, 1, 42) WHERE day = 1) b;
+----
+true
+
+# With sigma = 0 and mu = 0, prices stay flat
+query I
+SELECT count(*) FILTER (WHERE abs(price - 100.0) < 1e-9)
+FROM monte_carlo(100.0, 0.0, 0.0, 5, 1, 1);
+----
+6
+
+# Errors
+statement error
+SELECT * FROM monte_carlo(-1.0, 0.05, 0.20, 5, 5);
+----
+
+statement error
+SELECT * FROM monte_carlo(100.0, 0.05, -0.1, 5, 5);
+----
+
+statement error
+SELECT * FROM monte_carlo(100.0, 0.05, 0.2, 0, 5);
+----

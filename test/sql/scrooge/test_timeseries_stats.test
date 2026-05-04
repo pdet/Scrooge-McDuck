@@ -1,0 +1,53 @@
+# name: test/sql/scrooge/test_timeseries_stats.test
+# description: Test time-series stats (Hurst, ADF)
+# group: [scrooge]
+
+require scrooge
+
+# IID noise (returns-like) → H ≈ 0.5.
+statement ok
+CREATE TABLE iid AS
+SELECT '2024-01-01'::TIMESTAMP + (INTERVAL 1 DAY) * (i - 1) AS ts,
+       (hash(i) % 1000) / 1000.0 - 0.5 AS v
+FROM range(1, 513) t(i);
+
+query I
+SELECT hurst_exponent(v, ts) BETWEEN 0.2 AND 0.8 FROM iid;
+----
+true
+
+# A trending series (cumulative sum of constant increments) → H close to 1.
+statement ok
+CREATE TABLE trend_path AS
+SELECT '2024-01-01'::TIMESTAMP + (INTERVAL 1 DAY) * (i - 1) AS ts,
+       i * 1.0 AS v
+FROM range(1, 513) t(i);
+
+query I
+SELECT hurst_exponent(v, ts) > 0.7 FROM trend_path;
+----
+true
+
+# A stationary deterministic series (sin wave) → ADF stat strongly negative.
+statement ok
+CREATE TABLE stat AS
+SELECT '2024-01-01'::TIMESTAMP + (INTERVAL 1 DAY) * (i - 1) AS ts,
+       sin(i / 10.0) AS v
+FROM range(1, 200) t(i);
+
+query I
+SELECT adf_test_stat(v, ts) < 0 FROM stat;
+----
+true
+
+# A trending series with tiny noise → ADF stat closer to 0 (does not reject unit root).
+statement ok
+CREATE TABLE noisy_trend AS
+SELECT '2024-01-01'::TIMESTAMP + (INTERVAL 1 DAY) * (i - 1) AS ts,
+       i * 1.0 + ((hash(i) % 1000) / 1000.0) AS v
+FROM range(1, 200) t(i);
+
+query I
+SELECT adf_test_stat(v, ts) > -3.0 FROM noisy_trend;
+----
+true

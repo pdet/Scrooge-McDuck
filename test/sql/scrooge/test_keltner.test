@@ -1,0 +1,34 @@
+# name: test/sql/scrooge/test_keltner.test
+# description: Test Keltner channels
+# group: [scrooge]
+
+require scrooge
+
+statement ok
+CREATE TABLE bars AS
+SELECT '2024-01-01'::TIMESTAMP + (INTERVAL 1 DAY) * (i - 1) AS ts,
+       100.0 + i AS h, 99.0 + i AS l, 99.5 + i AS c
+FROM range(1, 41) t(i);
+
+# Upper > middle > lower.
+query I
+SELECT keltner_upper(h, l, c, ts) > keltner_middle(h, l, c, ts) AND
+       keltner_middle(h, l, c, ts) > keltner_lower(h, l, c, ts)
+FROM bars;
+----
+true
+
+# Default multiplier 2.0 → upper - middle = 2 * (middle - lower).
+query I
+SELECT abs((keltner_upper(h, l, c, ts) - keltner_middle(h, l, c, ts)) -
+           (keltner_middle(h, l, c, ts) - keltner_lower(h, l, c, ts))) < 1e-9
+FROM bars;
+----
+true
+
+# With multiplier 0, upper = middle = lower.
+query I
+SELECT abs(keltner_upper(h, l, c, ts, 20, 0.0) - keltner_lower(h, l, c, ts, 20, 0.0)) < 1e-9
+FROM bars;
+----
+true

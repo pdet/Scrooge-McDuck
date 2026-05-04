@@ -1,0 +1,20 @@
+# name: test/sql/scrooge/test_sec_edgar.test
+# description: Test that the SEC EDGAR scanner is registered and configurable.
+# group: [scrooge]
+
+require scrooge
+
+# sec_user_agent extension option is registered with a non-empty default.
+query I
+SELECT length(current_setting('sec_user_agent')) > 0;
+----
+true
+
+# User can override the UA.
+statement ok
+SET sec_user_agent = 'Test test@test.com';
+
+query I
+SELECT current_setting('sec_user_agent');
+----
+Test test@test.com

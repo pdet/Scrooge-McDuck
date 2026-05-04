@@ -57,6 +57,11 @@ SELECT * FROM fred_series('GDP', 'your_api_key');
 | `cmf(high, low, close, volume, timestamp, period)` | Chaikin Money Flow |
 | `ad_line(high, low, close, volume, timestamp)` | Accumulation/Distribution Line |
 | `pivot_point/pivot_r1/pivot_r2/pivot_r3/pivot_s1/pivot_s2/pivot_s3(h, l, c)` | Pivot Points |
+| `williams_r(high, low, close, ts [, period])` | Williams %R momentum oscillator |
+| `adx / plus_di / minus_di(high, low, close, ts [, period])` | Average Directional Index + DMI |
+| `ichimoku_tenkan / ichimoku_kijun / ichimoku_senkou_a / ichimoku_senkou_b(high, low, ts)` | Ichimoku Cloud lines |
+| `keltner_upper / keltner_middle / keltner_lower(high, low, close, ts [, period [, multiplier]])` | Keltner Channels |
+| `ha_open / ha_high / ha_low / ha_close(open, high, low, close, ts)` | Heikin-Ashi candles |
 
 ### Returns and Risk
 
@@ -105,17 +110,36 @@ SELECT * FROM fred_series('GDP', 'your_api_key');
 | `kelly_fraction(win_rate, avg_win, avg_loss)` | Optimal position size [0,1] |
 | `composite_score(rsi, macd, bb_pct, obv_pct)` | Multi-indicator conviction [-100,100] |
 
-### Options Pricing (Black-Scholes)
+### Options Pricing (Black-Scholes + American)
 
 | Function | Description |
 |----------|-------------|
-| `bs_call(S, K, T, r, sigma)` | Call option price |
-| `bs_put(S, K, T, r, sigma)` | Put option price |
+| `bs_call(S, K, T, r, sigma)` | European call price |
+| `bs_put(S, K, T, r, sigma)` | European put price |
 | `bs_delta_call / bs_delta_put` | Delta |
 | `bs_gamma` | Gamma |
 | `bs_theta_call / bs_theta_put` | Theta (per day) |
 | `bs_vega` | Vega (per 1% vol) |
 | `bs_implied_vol(price, S, K, T, r, is_call)` | Implied volatility |
+| `am_call(S, K, T, r, sigma [, steps])` | American call (CRR binomial) |
+| `am_put(S, K, T, r, sigma [, steps])` | American put (CRR binomial) |
+
+### Fixed Income
+
+| Function | Description |
+|----------|-------------|
+| `bond_price(face, coupon_rate, ytm, n_periods, freq)` | Coupon bond price |
+| `bond_ytm(price, face, coupon_rate, n_periods, freq)` | Yield to maturity |
+| `bond_macaulay_duration(face, coupon_rate, ytm, n_periods, freq)` | Macaulay duration (years) |
+| `bond_modified_duration(face, coupon_rate, ytm, n_periods, freq)` | Modified duration (years) |
+| `bond_convexity(face, coupon_rate, ytm, n_periods, freq)` | Convexity (years²) |
+
+### Time-Series Statistics
+
+| Function | Description |
+|----------|-------------|
+| `hurst_exponent(value, ts)` | Hurst exponent via R/S analysis |
+| `adf_test_stat(value, ts)` | Augmented Dickey-Fuller t-statistic (lag 0) |
 
 ### Data Scanners
 
@@ -125,6 +149,62 @@ SELECT * FROM fred_series('GDP', 'your_api_key');
 | `coingecko(coin_id, vs_currency, days)` | CoinGecko crypto OHLC data |
 | `fred_series(series_id, api_key [, start, end])` | Federal Reserve economic data |
 | `read_eth(url, method, from_block, to_block)` | Ethereum blockchain logs |
+| `sec_filings(cik_or_ticker [, form [, limit]])` | SEC EDGAR filing index |
+| `sec_facts(cik_or_ticker, concept [, taxonomy])` | SEC EDGAR XBRL fundamentals |
+| `polygon_aggs(symbol, multiplier, timespan, from, to, api_key)` | Polygon.io OHLCV aggregates |
+| `binance_klines(symbol, interval [, limit])` | Binance spot klines (no auth) |
+| `json_rpc(url, method [, params_json])` | Generic JSON-RPC 2.0 client (any blockchain or RPC service) |
+| `alpha_vantage_news(tickers [, time_from [, time_to [, limit]]])` | Alpha Vantage news + sentiment |
+
+### Configuration
+
+Set API keys and other defaults once per session via `SET`:
+
+```sql
+SET fred_api_key = 'YOUR_FRED_KEY';
+SET polygon_api_key = 'YOUR_POLYGON_KEY';
+SET alpha_vantage_api_key = 'YOUR_AV_KEY';
+SET sec_user_agent = 'Your Name your.email@example.com';
+```
+
+When configured, scanners can be called without the api_key argument:
+
+```sql
+SELECT * FROM fred_series('GDP');                    -- uses fred_api_key
+SELECT * FROM polygon_aggs('AAPL', 1, 'day',
+                           '2024-01-01', '2024-12-31'); -- uses polygon_api_key
+```
+
+### Macros
+
+A small library of analytical helpers ships preregistered:
+
+| Macro | Description |
+|-------|-------------|
+| `pct_change(curr, prev)` | Percent change with zero-protection |
+| `safe_div(a, b)` | `a / b` returning NULL when `b = 0` |
+| `clip(x, lo, hi)` | Clamp a value into a range |
+| `zscore(x, mean, stddev)` | Standard score |
+| `pct_to_bps(p)` / `bps_to_pct(b)` | Percent ↔ basis-point conversions |
+| `resample_ohlc(table_name, interval)` | Resample OHLCV to a coarser bucket |
+| `with_returns(table_name)` | Append simple_return / log_return to a (ts, price) series |
+
+### Quant Tooling
+
+| Function | Description |
+|----------|-------------|
+| `monte_carlo(start_price, mu, sigma, horizon_days, num_paths [, seed])` | GBM price-path simulation |
+| `min_variance_portfolio(returns_query)` | Closed-form min-variance allocation |
+| `max_sharpe_portfolio(returns_query [, risk_free_rate])` | Tangency / max-Sharpe allocation |
+| `efficient_frontier(returns_query, num_points [, risk_free_rate])` | Mean-variance frontier portfolios |
+| `backtest_equity(query, capital [, commission [, slippage]])` | Per-bar equity curve from a signal stream |
+| `backtest_trades(query, capital [, commission [, slippage]])` | Closed trades with PnL and return |
+| `backtest_stats(query, capital [, commission [, slippage]])` | Summary stats: CAGR, Sharpe, max DD, win rate, profit factor |
+
+The portfolio-optimization functions take a SQL query (as VARCHAR) returning
+`(symbol VARCHAR, return DOUBLE)` aligned by row position. The backtest
+functions take a query returning `(ts TIMESTAMP, price DOUBLE, signal VARCHAR)`
+where `signal` ∈ `'BUY'`, `'SELL'`, `'HOLD'` (case-insensitive).
 
 ### Utility
 
@@ -185,6 +265,38 @@ GEN=ninja make
 3. **Free** -- MIT licensed, no cloud costs
 4. **Fast** -- columnar storage and vectorized execution
 5. **Composable** -- combine indicators, signals, and data sources in a single query
+
+## Cookbook
+
+End-to-end recipes (momentum strategy + backtest, pairs trading,
+efficient frontier, options screener, Monte Carlo retirement, EDGAR DCF
+inputs, FRED macro overlay) live in [EXAMPLES.md](EXAMPLES.md).
+
+## Validation and Benchmarks
+
+`scripts/validate/validate_indicators.py` compares Scrooge outputs
+against pure-Python reference implementations:
+
+```bash
+python3 scripts/validate/validate_indicators.py
+```
+
+`scripts/benchmarks/run_benchmarks.py` runs throughput micro-benchmarks
+on synthetic data — useful for tracking regression across commits:
+
+```bash
+python3 scripts/benchmarks/run_benchmarks.py --rows 1000000 --runs 3
+```
+
+## Code style
+
+`.clang-format` defines the canonical style (LLVM with 2-space indent
+and 120-column lines). The Quality CI workflow runs `clang-format` in
+advisory mode. To autoformat locally:
+
+```bash
+find src -name '*.cpp' -o -name '*.hpp' | xargs clang-format -i
+```
 
 ## Roadmap
 
